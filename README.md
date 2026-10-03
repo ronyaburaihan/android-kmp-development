@@ -1,5 +1,8 @@
 # android-kmp-development
 
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+[![Buy Me A Coffee](https://img.shields.io/badge/Buy%20Me%20A%20Coffee-support-FFDD00?logo=buymeacoffee&logoColor=black)](https://buymeacoffee.com/ronyaburaihan)
+
 An [Agent Skill](https://docs.claude.com/en/docs/claude-code/skills) that makes an AI coding agent
 competent on **existing** Android and Kotlin Multiplatform codebases — developing, debugging,
 reviewing, testing, refactoring, upgrading and releasing.
@@ -290,6 +293,20 @@ The skill's own quality bar applies to changes to it:
 
 ---
 
-## Licence
+## Support
 
-<set by the repository owner>
+If this saved you time, you can [buy me a coffee](https://buymeacoffee.com/ronyaburaihan).
+
+<a href="https://buymeacoffee.com/ronyaburaihan" target="_blank"><img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" alt="Buy Me A Coffee" height="48" width="174"></a>
+
+Starring the repository helps too, and issues reporting a wrong or stale claim are the most useful
+contribution — see [Contributing](#contributing).
+
+---
+
+## License
+
+[MIT](LICENSE) © Abu Raihan Rony
+
+The skill is documentation, templates and an example project; use it in commercial and private work
+without restriction. The attribution requirement is the MIT notice, not a credit line in your app.
