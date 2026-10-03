@@ -20,6 +20,8 @@ Priority order when these conflict: **correctness → security → preserving ex
 5. **No unapproved migration.** Never restructure modules, swap a library, change versions, or reshape a public API without an explicit approval gate.
 6. **No invented facts.** Never guess an API, a Gradle DSL, a dependency coordinate, or a version. Read the version catalog, read the library, or ask.
 7. **Verify, don't assume.** Never report a build or test as passing unless it was executed. `NOT RUN — <reason>` is an acceptable result; a false `PASS` is not.
+8. **Align before building.** Look facts up; ask only decisions. Code that is correct and answers the wrong requirement is still a defect. `process/grilling.md`
+9. **Signal before theory, red before green.** Build a failing command before hypothesising about a bug; write the failing test before the code that satisfies it. `process/diagnostic-loop.md`, `process/tdd.md`
 
 ## Rule levels
 
@@ -49,6 +51,28 @@ Full contract: `references/README.md`. Standing workflow contract: `workflows/RE
 
 Then load **only** the rows below that match the task.
 
+## Process primitives
+
+`references/` is what is **true**. `workflows/` is the **steps** for an Android task. `process/` is
+**how to work** — the mechanics a workflow invokes. Read a primitive when its mechanic is what the
+task needs; `process/README.md` is the index.
+
+| Primitive | Reach for it when |
+|---|---|
+| `process/grilling.md` | The request is ambiguous. Frontier interview: look facts up, ask only decisions, one numbered round with recommendations. |
+| `process/vertical-slice.md` | Work is too large for one session, or nothing would be demoable until the end. |
+| `process/tdd.md` | Writing code that must work. **The seam table names the tool and a verified example test for each of 11 KMP seams.** |
+| `process/diagnostic-loop.md` | A bug. Build a red-capable, deterministic, fast, agent-runnable command **before** any hypothesis. |
+| `process/two-axis-review.md` | Reviewing a change. Standards and spec as independent axes, never merged into one verdict. |
+| `process/handoff.md` | Context is running out and the work continues elsewhere. |
+| `process/retro.md` | After a session: improve the environment — a check beats an instruction. |
+| `process/writing-for-agents.md` | Editing this skill, an `AGENTS.md`, or a standards document. |
+
+The mechanics are adapted from [Matt Pocock's skills](https://github.com/mattpocock/skills) (MIT);
+the Android/KMP mapping is this skill's. Attribution and scope: `process/README.md`.
+
+---
+
 ## Worked example
 
 `examples/` holds a compiled, tested vertical slice — domain, data, presentation — plus the
@@ -71,15 +95,20 @@ rationale for each decision.
 
 | Task | Read |
 |---|---|
-| An ambiguous request | `workflows/clarify-requirements.md` first |
+| An ambiguous request | `workflows/clarify-requirements.md` first (+ `process/grilling.md`) |
 | "Does X support Y?" / "Is Z recommended?" | `workflows/research-technical-question.md` |
 | Plan a multi-file change | `workflows/plan-feature.md` + the layer references it names |
 | Add a screen or feature | `workflows/add-feature.md` + `references/architecture/mvvm-udf.md` + `references/android/compose-ui.md` |
 | Add or change an API call | `workflows/add-network-endpoint.md` + `references/libraries/ktor-networking.md` |
 | Persist data; Room/DataStore; migration | `workflows/add-persistence.md` + `references/libraries/room-datastore.md` |
-| Fix a bug | `workflows/diagnose-and-fix-bug.md` + the one reference for the defect's area |
+| Fix a bug | `workflows/diagnose-and-fix-bug.md` + `process/diagnostic-loop.md` + the one reference for the defect's area |
 | Refactor / extract / rename | `workflows/refactor.md` (+ `workflows/backfill-tests.md` if coverage is thin) |
-| Review a diff or PR | `workflows/review-code.md` + `references/deprecations.md` |
+| Review a diff or PR | `workflows/review-code.md` + `process/two-axis-review.md` + `references/deprecations.md` |
+| Which seam to test at; writing the test first | `process/tdd.md` |
+| Break work into steps that are each demoable | `process/vertical-slice.md` |
+| Out of context mid-task; handing over | `process/handoff.md` |
+| "How could this session have gone better?" | `process/retro.md` |
+| Editing this skill, `AGENTS.md`, or a standards doc | `process/writing-for-agents.md` |
 | Coroutine, Flow, or `StateFlow` issue | `references/kotlin/coroutines-and-flow.md` + `workflows/diagnose-and-fix-bug.md` |
 | Jank, slow startup, recomposition | `workflows/audit-compose-performance.md` + `references/android/compose-ui.md` + `references/quality/performance.md` |
 | Security review | `workflows/audit-security.md` + `references/quality/security.md` |
@@ -121,7 +150,7 @@ rationale for each decision.
 
 **Do not** load Firebase, subscriptions, release, or iOS-interop documents for a task that does not touch them.
 
-Full index with one-line topic summaries: `references/README.md`, `workflows/README.md`.
+Full index with one-line topic summaries: `references/README.md`, `workflows/README.md`, `process/README.md`.
 
 ---
 
@@ -158,6 +187,7 @@ Defaults for new code, where the project has not already decided:
 
 **While coding:**
 
+- Write the failing test first, at an agreed seam, and see it fail for the expected reason (`process/tdd.md`). Iterate on one test class; run `allTests` once before reporting.
 - Match the codebase's conventions, naming, and module layout — not these defaults.
 - Keep new declarations `internal` unless another module needs them.
 - Handle loading, success, empty, and error states. No `TODO()` in a delivered path.

@@ -29,7 +29,8 @@ command exists.
 If you catch yourself reading source to build a theory before you can make the bug fail on demand,
 **stop**. Jumping to hypothesis is the exact failure this primitive prevents.
 
-A loop is ready when **all four** hold:
+A loop is ready when you can name **one command** that you have **already run at least once** —
+showing the invocation and its output — and **all four** of these hold:
 
 | Property | Test |
 |---|---|
@@ -37,6 +38,9 @@ A loop is ready when **all four** hold:
 | **Deterministic** | Same verdict every run. Pin time, seed RNG, isolate the file system, fix the locale |
 | **Fast** | Seconds. A two-minute loop will not be run enough times to localise anything |
 | **Agent-runnable** | Executes unattended, no human tapping a screen |
+
+A command you believe would fail is not a loop. **MUST** run it and **MUST** show the output;
+"runs without erroring" is not red-capable — it must be able to catch *this specific* bug.
 
 No red-capable command → no Phase 2. If you cannot build one, **MUST** stop and ask for what is
 missing: device access, a crash report, a captured response body, a user ID that reproduces, or

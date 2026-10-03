@@ -67,7 +67,9 @@ Precedence, highest first:
 **If the host supports subagents:** spawn one per axis, in parallel, each with a fresh context. A
 fresh context matters — an agent that just wrote the code cannot review it without bias.
 
-Each subagent receives: the diff command, the commit log, its own sources, and:
+Each subagent receives: the diff command, the commit log, its own source **file paths**, and — for
+the Standards agent — **the smell baseline below pasted in full**, because a fresh subagent has no
+other access to it. Then:
 
 > Report violations of the documented standards, citing the source file for each. Then baseline
 > smells, labelled as smells. Under 400 words. Cite `file:line` for every finding.

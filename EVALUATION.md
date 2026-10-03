@@ -77,6 +77,27 @@ Score each item PASS / FAIL / N/A. A FAIL on any **gate** item is a failed evalu
 
 ---
 
+## G. Process discipline
+
+| # | Check | Gate |
+|---|---|---|
+| G1 | Questions asked of the user were **decisions**, not facts the codebase answers. Facts were looked up, and the agent can say where each came from | |
+| G2 | The whole frontier arrived in **one** numbered round, each question carrying a recommended answer | |
+| G3 | No question presumed an answer the user had not yet given | |
+| G4 | For a bug: a **red-capable command existed before any hypothesis**, and appears verbatim in the report | |
+| G5 | That command is deterministic, fast, and runnable without a human — and the agent did not read source for a cause before it existed | |
+| G6 | Hypotheses were written down, ranked, and each carried a falsifiable prediction | |
+| G7 | For new code: the test was seen **failing for the expected reason** before the implementation existed | |
+| G8 | Tests sit at the seams the plan agreed — none reached by widening visibility or mocking a collaborator inside the unit | |
+| G9 | Red-green iterated on a single test class; `allTests` was run once before reporting, with its result stated honestly | |
+| G10 | A review reported **two separate axes** (standards, spec), each finding citing `file:line` and its source, with no merged verdict | |
+| G11 | Where the host has no subagents, the review says the axes were run sequentially rather than implying isolation | |
+| G12 | Work split across sessions was sliced **vertically** — each slice demoable, declaring its blockers — not by layer | |
+| G13 | No slice shipped a `TODO()` on a delivered path to appear complete | |
+| G14 | A handoff went to `$TMPDIR`, referenced artefacts by path, listed approval gates explicitly, and contained no secret | |
+
+---
+
 ## Suggested eval scenarios
 
 | Scenario | What a PASS looks like |
@@ -89,13 +110,17 @@ Score each item PASS / FAIL / N/A. A FAIL on any **gate** item is a failed evalu
 | "The iOS team can't call `observeFeed()`" | Agent reads the generated header, identifies `Flow` at the boundary, proposes a callback facade alongside (not replacing) the Kotlin API, flags source-breaking changes. |
 | Dirty working tree at task start | Agent stops and asks before touching anything. |
 | Build already red at task start | Agent stops; does not begin the task on a broken build. |
+| "Make the profile load faster" (no numbers given) | Agent refuses to diagnose by eye; builds a Macrobenchmark or declares it cannot, rather than guessing at a cause from reading code. |
+| "Add offline support to the feed" (large, vague) | Agent grills the frontier in one round, then slices vertically — cache-read first, demoable — instead of sequencing domain → data → UI. |
+| "Review my branch" with no fixed point given | Agent asks for the fixed point with a recommendation, resolves it with `git rev-parse`, then reports standards and spec separately. |
+| "Just write the code, skip the tests" | Agent states the cost once, then delivers the full requested scope as asked — it does not refuse, and it does not silently test anyway. |
 
 ## Evaluating the skill itself
 
 | # | Check |
 |---|---|
 | S1 | `SKILL.md` frontmatter is valid YAML with `name` and `description` |
-| S2 | Every path referenced in `SKILL.md`, `references/`, `workflows/`, `examples/`, `templates/` resolves |
+| S2 | Every path referenced in `SKILL.md`, `references/`, `workflows/`, `process/`, `examples/`, `templates/` resolves |
 | S3 | Every workflow has all ten required sections |
 | S4 | `examples/user-profile/` compiles and its tests pass on the documented toolchain (see `examples/README.md` for the recorded run) |
 | S5 | Every version in `references/version-matrix.md` was checked against its registry on the verification date |

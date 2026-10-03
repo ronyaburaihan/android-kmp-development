@@ -3,11 +3,10 @@ description: Android and Kotlin Multiplatform engineering rules
 globs: ["**/*.kt","**/*.kts","**/*.swift","**/*.toml"]
 alwaysApply: true
 ---
-
 # Android / Kotlin Multiplatform engineering
 
-This project uses the **android-kmp-development** skill: 35 reference documents, 24 workflows and a
-compiled example at `SKILL_PATH`. Everything below is the always-loaded summary — **read the files
+This project uses the **android-kmp-development** skill: 35 reference documents, 24 workflows,
+8 process primitives and a compiled example at `SKILL_PATH`. Everything below is the always-loaded summary — **read the files
 named in the routing table on demand.** Do not try to hold the whole set in context.
 
 Entry point: `SKILL_PATH/SKILL.md`.
@@ -27,6 +26,11 @@ Entry point: `SKILL_PATH/SKILL.md`.
    version catalog, read the library, or ask.
 7. **Verify, don't assume.** `PASS` means a command was executed. `NOT RUN — <reason>` is honest; a
    false `PASS` is a defect. Never modify, skip or delete an existing test to make a build green.
+8. **Align before building.** Look facts up in the codebase; ask the user only decisions. Code that
+   is correct and answers the wrong requirement is still a defect. `process/grilling.md`
+9. **Signal before theory, red before green.** For a bug, build a command that fails on it before
+   forming any hypothesis. For a feature, write the failing test before the code that satisfies it.
+   `process/diagnostic-loop.md`, `process/tdd.md`
 
 ## Rule levels
 
@@ -50,16 +54,21 @@ convention, present as a choice · **[UNVERIFIED]** must be verified before use,
 
 | Task | Read |
 |---|---|
-| Ambiguous request | `workflows/clarify-requirements.md` |
+| Ambiguous request | `workflows/clarify-requirements.md` + `process/grilling.md` |
+| Which seam to test at; test-first | `process/tdd.md` — names the tool and a verified example test per seam |
+| Break work into demoable steps | `process/vertical-slice.md` |
+| Out of context; handing over | `process/handoff.md` |
+| "How could this session have gone better?" | `process/retro.md` |
+| Editing this file or a standards doc | `process/writing-for-agents.md` |
 | "Does X support Y?" / "Is Z recommended?" | `workflows/research-technical-question.md` |
 | Plan a multi-file change | `workflows/plan-feature.md` |
 | Add a screen or feature | `workflows/add-feature.md` + `references/architecture/mvvm-udf.md` + `references/android/compose-ui.md` |
 | Add or change an API call | `workflows/add-network-endpoint.md` + `references/libraries/ktor-networking.md` |
 | Persist data, Room/DataStore, migration | `workflows/add-persistence.md` + `references/libraries/room-datastore.md` |
-| Fix a bug | `workflows/diagnose-and-fix-bug.md` + the one reference for the defect's area |
+| Fix a bug | `workflows/diagnose-and-fix-bug.md` + `process/diagnostic-loop.md` + the one reference for the defect's area |
 | Coroutine / Flow / StateFlow issue | `references/kotlin/coroutines-and-flow.md` |
 | Refactor, extract, rename | `workflows/refactor.md` |
-| Review a diff or PR | `workflows/review-code.md` + `references/deprecations.md` |
+| Review a diff or PR | `workflows/review-code.md` + `process/two-axis-review.md` + `references/deprecations.md` |
 | Jank, slow startup, recomposition | `workflows/audit-compose-performance.md` + `references/quality/performance.md` |
 | Security review | `workflows/audit-security.md` + `references/quality/security.md` |
 | Add missing tests | `workflows/backfill-tests.md` + `references/quality/testing-strategy.md` |

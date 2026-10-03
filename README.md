@@ -24,8 +24,13 @@ Architecture as a Google specification (it is not), describe Compose Multiplatfo
 production-ready (it is Beta), or return an empty list to signal a network failure. It will also
 restructure your modules on the way to adding a button.
 
-This skill is a set of rules, procedures and verified examples that prevent those outcomes, with
-every claim labelled by how well it is known.
+It will also build the wrong thing correctly: a `StateFlow` that is idiomatic, conventional,
+well-named, and answers a requirement nobody asked for. No amount of API accuracy catches that.
+
+This skill combines three layers to cover both failures — **official documentation** (what is true),
+**engineering standards** (how this codebase does it), and **process** (how to work: align before
+building, red before green, a failing command before a theory) — with every claim labelled by how
+well it is known.
 
 ---
 
@@ -33,14 +38,15 @@ every claim labelled by how well it is known.
 
 | Part | Contents |
 |---|---|
-| [`SKILL.md`](SKILL.md) | The entry point. Role, seven non-negotiable principles, the rule-level legend, and a **routing table** so a focused task loads two or three documents instead of sixty. |
+| [`SKILL.md`](SKILL.md) | The entry point. Role, nine non-negotiable principles, the rule-level legend, and a **routing table** so a focused task loads two or three documents instead of sixty. |
 | [`references/`](references/) | **35 topic documents.** Every normative statement tagged **MUST / SHOULD / MAY** and **[OFFICIAL] / [DEFAULT] / [UNVERIFIED]**. |
+| [`process/`](process/README.md) | **8 engineering process primitives** — frontier interview, vertical slicing, red-green at pre-agreed seams, feedback-loop-before-hypothesis, two-axis review, handoff, retro, writing-for-agents. Mechanics adapted from [Matt Pocock's skills](https://github.com/mattpocock/skills) (MIT), mapped onto this toolchain. |
 | [`workflows/`](workflows/) | **24 step-by-step procedures**, each with objective, required inputs, project inspection, procedure, decision points, implementation rules, validation requirements, failure handling, completion criteria and report format. |
 | [`examples/`](examples/) | A **compiled and tested** KMP vertical slice — Android, JVM and both iOS targets; Compose UI; Room 3 with a seeded migration test; a Swift-facing facade whose smoke file compiles against the generated framework — plus the rationale for every decision. |
 | [`install/`](install/README.md) | Bootstrap adapters and an installer for **any** agent — Claude Code, Codex, OpenCode, Cursor, Kiro, Trae, Windsurf, Antigravity, Copilot and every
 `AGENTS.md` reader. |
 | [`templates/`](templates/) | 15 fill-in skeletons: spec, plan, task report, ADR, PR, bug report, commit message, release checklist, version catalog, module build file, CI config, and a project-structure convention with a scaffold script. |
-| [`EVALUATION.md`](EVALUATION.md) | 48 checks and 8 scenarios for judging whether an agent is actually using the skill correctly. |
+| [`EVALUATION.md`](EVALUATION.md) | 60 checks and 12 scenarios for judging whether an agent is actually using the skill correctly. |
 | [`LIMITATIONS.md`](LIMITATIONS.md) | Every unverified claim, exactly what was and was not compiled, topics not covered, and the facts corrected during verification. |
 | [`research/RESEARCH.md`](research/RESEARCH.md) | The sourced research the skill was built from, with an addendum of corrections found by compiling. |
 
@@ -108,7 +114,7 @@ the declared trigger. The dedicated adapters exist only where an agent's own for
 ### How it works, and why it isn't just a paste
 
 The skill is ~24,000 lines. Most agents load their instruction file fully into context every
-session, and Codex caps combined instructions at **32 KiB**. So each agent gets a **~7 KB
+session, and Codex caps combined instructions at **32 KiB**. So each agent gets an **~8 KB
 bootstrap** carrying the non-negotiable rules, the rule-level legend, the stop conditions and a
 **routing table** naming the file to open per task; the agent reads the rest on demand. That
 reproduces Claude Code's progressive disclosure for agents with no skill system.
@@ -214,6 +220,10 @@ generates the tree, the MVI base types and screen sets.
    when empty, so an omitted caveat cannot read as no caveat.
 7. **Stop rather than guess.** Dirty working tree, already-failing build, wrong task premise,
    conflicting rules — all are stop-and-ask conditions.
+8. **Align before building.** Facts about your codebase get looked up; only decisions reach you,
+   in one numbered round with a recommendation for each.
+9. **Signal before theory, red before green.** A bug gets a reproducible failing command before any
+   hypothesis. A feature gets a failing test at an agreed seam before the code that satisfies it.
 
 ---
 
@@ -258,7 +268,7 @@ fails on a different target), that Room 3's `Migration.migrate` is a `suspend` f
 Stated plainly, because a skill that hides its edges is worse than one that names them. Full detail
 in [`LIMITATIONS.md`](LIMITATIONS.md).
 
-- **It has never been run end-to-end.** `EVALUATION.md` defines 48 checks and 8 scenarios; none has
+- **It has never been run end-to-end.** `EVALUATION.md` defines 60 checks and 12 scenarios; none has
   been executed. Static validation and a compiling example are what exist today.
 - **39 `[UNVERIFIED]` claims remain** in the references, each tagged with what would settle it —
   Kotlin/Native crash symbolication, Swift export's Gradle DSL, SKIE's Kotlin ceiling, and others.
@@ -291,6 +301,11 @@ a first-party source.
 
 Every reference document ends with a **Sources** section carrying its URLs and verification date.
 The full research record is [`research/RESEARCH.md`](research/RESEARCH.md).
+
+The process layer's mechanics come from **[Matt Pocock's skills repository](https://github.com/mattpocock/skills)**
+(MIT, Copyright © 2026 Matt Pocock) — the frontier interview, testing only at pre-agreed seams,
+feedback-loop-before-hypothesis, the two-axis review and tracer-bullet slicing are his. Scope of the
+adaptation, and the licence notice, are in [`process/README.md`](process/README.md).
 
 ---
 

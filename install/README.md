@@ -1,10 +1,10 @@
 # Installing for any coding agent
 
-The skill is 35 references, 24 workflows and a compiled example — about 24,000 lines. Most agents
+The skill is 35 references, 24 workflows, 8 process primitives and a compiled example — about 24,000 lines. Most agents
 load their instruction file **fully into context** every session, and OpenAI Codex caps combined
 instructions at **32 KiB**. Pasting the skill into an `AGENTS.md` is therefore not an option.
 
-Instead each agent gets a **~7 KB bootstrap**: the non-negotiable rules, the rule-level legend, the
+Instead each agent gets a **~8 KB bootstrap**: the non-negotiable rules, the rule-level legend, the
 stop conditions, and the **routing table** naming the file to open for each task. The agent reads
 the rest on demand. That is the same progressive disclosure Claude Code's skill system gives
 natively, reproduced for agents that have no skill system.

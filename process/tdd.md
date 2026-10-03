@@ -77,7 +77,10 @@ it is that unit's seam. Faking the Room DAO inside a repository test is implemen
    nothing, or assert what already worked.
 2. **One slice at a time.** One seam, one test, one implementation, per cycle.
 3. **No horizontal slicing.** **MUST NOT** write all the tests for a feature before implementing any
-   of it. That tests imagined behaviour and locks the test structure before you know the shape.
+   of it. Bulk tests verify *imagined* behaviour: they assert the shape of things rather than
+   behaviour, and they commit to a test structure before you understand the implementation. Work in
+   vertical slices — one test → one implementation → repeat, each test a tracer bullet that responds
+   to what the last cycle taught you (`vertical-slice.md`).
 4. **Refactoring is not part of the cycle.** Structural cleanup belongs to
    `../workflows/refactor.md` or `two-axis-review.md`, in its own verified step.
 5. **Expected values come from an independent source.** If the assertion recomputes the expected

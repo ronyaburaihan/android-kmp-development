@@ -49,6 +49,7 @@ Each appears in the reference set with that tag. None should be repeated to a us
 | **Swift not executed** | compile-only; no XCTest ran on a simulator (needs an Xcode project). |
 | **Snippets inside `references/*.md` and `workflows/*.md`, the templates, and the marked sections of `examples/ui-layer.md`** | structurally checked against the compiled example where they overlap; otherwise unverified. Treat as patterns. |
 | **CI template** | `templates/ci-github-actions.yml` is valid YAML; it was not executed on a hosted runner. |
+| **Process primitives** | `process/` was added on 2026-10-03. The mechanics are adapted from Matt Pocock's skills (MIT) and the Android/KMP mapping is this skill's own: the seam table cites 11 test classes that exist and were executed in `examples/user-profile/`, and every relative path in `process/` resolves. But **no primitive has been behaviourally evaluated** — whether an agent given `tdd.md` actually writes the test first, or given `diagnostic-loop.md` actually refuses to hypothesise before building a loop, is untested. `EVALUATION.md` defines the checks; none has been run. |
 | **Agent adapters** | `install/` was run into a throwaway project and all 57 routing targets resolved, and every path was verified against first-party docs on 2026-10-03. But the adapters were **not** behaviourally tested inside Codex, Cursor, Kiro, Trae, Windsurf, Antigravity, OpenCode or Copilot — whether each agent honours a rule file of this shape and follows the routing table rather than guessing is unverified. |
 
 ## 3. Topics not covered
