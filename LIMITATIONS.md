@@ -49,6 +49,7 @@ Each appears in the reference set with that tag. None should be repeated to a us
 | **Swift not executed** | compile-only; no XCTest ran on a simulator (needs an Xcode project). |
 | **Snippets inside `references/*.md` and `workflows/*.md`, the templates, and the marked sections of `examples/ui-layer.md`** | structurally checked against the compiled example where they overlap; otherwise unverified. Treat as patterns. |
 | **CI template** | `templates/ci-github-actions.yml` is valid YAML; it was not executed on a hosted runner. |
+| **Agent adapters** | `install/` was run into a throwaway project and all 57 routing targets resolved, and every path was verified against first-party docs on 2026-10-03. But the adapters were **not** behaviourally tested inside Codex, Cursor, Kiro, Trae, Windsurf, OpenCode or Copilot — whether each agent honours a rule file of this shape and follows the routing table rather than guessing is unverified. |
 
 ## 3. Topics not covered
 

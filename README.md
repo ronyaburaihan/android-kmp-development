@@ -37,6 +37,7 @@ every claim labelled by how well it is known.
 | [`references/`](references/) | **35 topic documents.** Every normative statement tagged **MUST / SHOULD / MAY** and **[OFFICIAL] / [DEFAULT] / [UNVERIFIED]**. |
 | [`workflows/`](workflows/) | **24 step-by-step procedures**, each with objective, required inputs, project inspection, procedure, decision points, implementation rules, validation requirements, failure handling, completion criteria and report format. |
 | [`examples/`](examples/) | A **compiled and tested** KMP vertical slice — Android, JVM and both iOS targets; Compose UI; Room 3 with a seeded migration test; a Swift-facing facade whose smoke file compiles against the generated framework — plus the rationale for every decision. |
+| [`install/`](install/README.md) | Bootstrap adapters and an installer for **any** agent — Claude Code, Codex, OpenCode, Cursor, Kiro, Trae, Windsurf, Copilot and every `AGENTS.md` reader. |
 | [`templates/`](templates/) | 15 fill-in skeletons: spec, plan, task report, ADR, PR, bug report, commit message, release checklist, version catalog, module build file, CI config, and a project-structure convention with a scaffold script. |
 | [`EVALUATION.md`](EVALUATION.md) | 48 checks and 8 scenarios for judging whether an agent is actually using the skill correctly. |
 | [`LIMITATIONS.md`](LIMITATIONS.md) | Every unverified claim, exactly what was and was not compiled, topics not covered, and the facts corrected during verification. |
@@ -71,14 +72,48 @@ every claim labelled by how well it is known.
 
 ## Installation
 
-The skill is a plain directory containing `SKILL.md`. A host discovers it by scanning its skills
-folder and reading the YAML frontmatter (`name`, `description`).
+Works with **any** coding agent. One command:
 
-> **The directory must be named `android-kmp-development`**, matching the `name` in the frontmatter.
-> This repository is named `…-skill`, so a bare `git clone` creates the wrong directory name and the
-> skill will not resolve. The commands below name the target explicitly.
+```bash
+git clone https://github.com/ronyaburaihan/android-kmp-development-skill.git
+cd android-kmp-development-skill
+./install/install.sh <agent> [--scope user|project]
+```
 
-**All projects (user scope):**
+| `<agent>` | Covers | Project scope | User scope |
+|---|---|---|---|
+| `claude` | Claude Code — **native skill**, best fidelity | `.claude/skills/` | `~/.claude/skills/` |
+| `agents` | the open `AGENTS.md` standard — **24 products**, below | `./AGENTS.md` | — |
+| `codex` | OpenAI Codex CLI | `./AGENTS.md` | `~/.codex/AGENTS.md` |
+| `opencode` | OpenCode | `./AGENTS.md` | `~/.config/opencode/AGENTS.md` |
+| `cursor` | Cursor (`.mdc` rule — adds `globs`, `alwaysApply`) | `.cursor/rules/` | — |
+| `kiro` | AWS Kiro (steering, `inclusion: always`) | `.kiro/steering/` | `~/.kiro/steering/` |
+| `trae` | Trae | `.trae/rules/` | `~/.trae/user_rules/` |
+| `windsurf` | Windsurf (`trigger: always_on`) | `.windsurf/rules/` | — |
+| `copilot` | GitHub Copilot | `.github/copilot-instructions.md` | — |
+| `all` | `AGENTS.md` + every project-scope adapter | all of the above | — |
+
+`agents` alone already covers **Codex, OpenCode, Cursor, Aider, goose, Zed, Warp, VS Code, GitHub
+Copilot, Gemini CLI, Jules, Amp, Junie, Devin, Windsurf, Factory, RooCode, Kilo Code, Augment Code,
+Ona, Phoenix, Semgrep** and UiPath Autopilot — every product listed at
+[agents.md](https://agents.md/). The dedicated adapters exist only where an agent's own format adds
+something `AGENTS.md` cannot express.
+
+**Restart the agent session afterwards** — instruction files are read at session start.
+
+### How it works, and why it isn't just a paste
+
+The skill is ~24,000 lines. Most agents load their instruction file fully into context every
+session, and Codex caps combined instructions at **32 KiB**. So each agent gets a **~7 KB
+bootstrap** carrying the non-negotiable rules, the rule-level legend, the stop conditions and a
+**routing table** naming the file to open per task; the agent reads the rest on demand. That
+reproduces Claude Code's progressive disclosure for agents with no skill system.
+
+Every adapter is generated from one source (`install/AGENTS.md`), and an existing instruction file
+is backed up and appended to rather than overwritten. Full detail, manual install and verification
+steps: **[`install/README.md`](install/README.md)**.
+
+### Claude Code without the script
 
 ```bash
 mkdir -p ~/.claude/skills
@@ -86,50 +121,26 @@ git clone https://github.com/ronyaburaihan/android-kmp-development-skill.git \
   ~/.claude/skills/android-kmp-development
 ```
 
-**One project (project scope):**
+> The directory **must** be named `android-kmp-development`, matching the `name` in `SKILL.md`'s
+> frontmatter. This repository is named `…-skill`, so a bare `git clone` creates the wrong directory
+> name and the skill will not resolve.
+
+Verify, then restart the session:
 
 ```bash
-mkdir -p .claude/skills
-git clone https://github.com/ronyaburaihan/android-kmp-development-skill.git \
-  .claude/skills/android-kmp-development
+head -5 ~/.claude/skills/android-kmp-development/SKILL.md   # must show the YAML frontmatter
 ```
 
-Project scope takes precedence over user scope, which is useful for pinning a project to a
-particular revision.
+`/skills` lists it; `/android-kmp-development` invokes it explicitly.
 
-**From a local copy, or a downloaded archive:**
-
-```bash
-mkdir -p ~/.claude/skills
-cp -r /path/to/android-kmp-development ~/.claude/skills/
-```
-
-**Other Agent-Skills-compatible hosts:** copy the directory into the host's skills location. Nothing
-here is Claude Code specific — `SKILL.md` is the entry point and every internal path is relative.
-
-### Verify
+### Update / uninstall
 
 ```bash
-ls   ~/.claude/skills/android-kmp-development/SKILL.md   # must exist
-head -5 ~/.claude/skills/android-kmp-development/SKILL.md # must show the YAML frontmatter
-```
-
-**Restart your session.** A skill added mid-session is not discovered until the next one. Then
-`/skills` lists it and `/android-kmp-development` invokes it explicitly.
-
-### Update
-
-```bash
-git -C ~/.claude/skills/android-kmp-development pull
-```
-
-Re-read `references/version-matrix.md` afterwards — it carries a verification date.
-
-### Uninstall
-
-```bash
+git -C ~/.claude/skills/android-kmp-development pull   # then re-read references/version-matrix.md
 rm -rf ~/.claude/skills/android-kmp-development
 ```
+
+Re-run `install.sh` after an update to refresh the adapters for other agents.
 
 ---
 
