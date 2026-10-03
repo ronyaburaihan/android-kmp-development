@@ -1,0 +1,12 @@
+<resources>
+    <string name="profile_title">Profile</string>
+    <string name="profile_refresh">Refresh</string>
+    <string name="profile_empty">No profile yet</string>
+    <string name="profile_loading">Loading profile</string>
+    <string name="a11y_avatar">Profile picture</string>
+    <string name="msg_user_load_failed">Could not load your profile</string>
+    <string name="msg_user_not_found">Profile not found</string>
+    <string name="msg_session_expired">Your session has expired. Please sign in again.</string>
+    <string name="msg_offline">You are offline. Showing the last saved profile.</string>
+    <string name="msg_profile_refreshed">Profile refreshed</string>
+</resources>
