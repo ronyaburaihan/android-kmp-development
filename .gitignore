@@ -1,0 +1,14 @@
+# macOS
+.DS_Store
+
+# Gradle / Kotlin build output (examples/user-profile has its own too)
+build/
+.gradle/
+.kotlin/
+local.properties
+
+# Third-party agent skills vendored into this directory by a skill installer.
+# They belong to other skills, not to android-kmp-development. Files stay on disk;
+# to track them anyway: git add -f .agents skills-lock.json
+.agents/
+skills-lock.json
