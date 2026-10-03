@@ -2,6 +2,8 @@
 
 Standing contract: `README.md`. Prerequisite: `inspect-project.md`.
 
+**Primitives:** `../process/vertical-slice.md` § expand–contract (sequencing), `../process/two-axis-review.md` (per step).
+
 ---
 
 ## 1. Objective

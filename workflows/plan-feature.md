@@ -2,6 +2,8 @@
 
 Standing contract: `README.md`. Prerequisites: `clarify-requirements.md` (confirmed spec), `inspect-project.md` (Project Profile).
 
+**Primitives:** `../process/grilling.md` (unresolved forks), `../process/vertical-slice.md` (sequencing), `../process/tdd.md` (agreeing the test seams).
+
 ---
 
 ## 1. Objective
@@ -82,13 +84,34 @@ Every file to be created or modified, with its role. This is the artefact the us
 
 **MUST** list every shared type the plan modifies and every consumer of it.
 
-### 4.5 Plan the tests
+### 4.5 Agree the test seams — MUST
 
-Per layer, the test file and what it asserts — before the code exists. See `../references/quality/testing-strategy.md`.
+Name the **seams** this feature will be tested at, and the tool for each, before any code exists:
+`../process/tdd.md` § Seams. Testing capacity is finite; agreeing the seams here is what directs it
+at the logic that can actually be wrong, instead of at everything.
 
-### 4.6 Sequence the work
+For each seam: the test file, what it asserts, and which tool (Turbine, `MockEngine`, in-memory
+Room, `runComposeUiTest`). Strategy and tooling: `../references/quality/testing-strategy.md`.
 
-Order so that each step compiles and is testable: domain → data → presentation → UI → wiring. For a large feature, split into independently shippable steps behind a flag.
+**MUST NOT** plan tests as a final step after the implementation. Each slice carries its own.
+
+### 4.6 Sequence the work — vertical slices, MUST
+
+Run `../process/vertical-slice.md`. Each step cuts a **narrow but complete** path through every
+layer it touches, is demoable on its own, and fits one fresh context window.
+
+**MUST NOT** sequence by layer. "All of domain, then all of data, then all of presentation" is a
+horizontal slice: nothing is demoable until the last step, and every integration defect arrives at
+once. In the house package-by-layer structure the directories *are* the layers, so layer-shaped
+sequencing is the path of least resistance — this rule exists to counteract that.
+
+Instead: one state of the screen end to end, then the next capability. Cache before network. One
+platform before both. Declare each slice's blocking edges; at least one slice has none.
+
+For a wide refactor, sequence expand → migrate → contract, each stage independently green
+(`../process/vertical-slice.md` § Wide refactors, `refactor.md`).
+
+Where a feature must ship dark, a flag is orthogonal to slicing — slice vertically *and* gate it.
 
 ### 4.7 Present and stop — MUST
 

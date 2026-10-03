@@ -2,6 +2,8 @@
 
 Standing contract: `README.md`. Prerequisite: `inspect-project.md`.
 
+**Primitives:** `../process/tdd.md` — DAO against a real in-memory database, migration against the exported schema.
+
 ---
 
 ## 1. Objective

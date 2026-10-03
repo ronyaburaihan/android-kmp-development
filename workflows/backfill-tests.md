@@ -2,6 +2,8 @@
 
 Standing contract: `README.md`. Prerequisite: `inspect-project.md`.
 
+**Primitives:** `../process/tdd.md` — the seam table decides where a test belongs.
+
 ---
 
 ## 1. Objective

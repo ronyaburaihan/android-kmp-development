@@ -2,6 +2,8 @@
 
 Standing contract: `README.md`. Prerequisite: `inspect-project.md`.
 
+**Primitives:** `../process/tdd.md` — the Compose screen seam.
+
 ---
 
 ## 1. Objective

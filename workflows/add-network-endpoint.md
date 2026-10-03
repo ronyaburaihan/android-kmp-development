@@ -2,6 +2,8 @@
 
 Standing contract: `README.md`. Prerequisite: `inspect-project.md`.
 
+**Primitives:** `../process/tdd.md` — mapper and data source first, `MockEngine` at the HTTP seam.
+
 ---
 
 ## 1. Objective

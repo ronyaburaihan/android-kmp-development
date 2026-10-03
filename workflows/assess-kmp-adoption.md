@@ -2,6 +2,8 @@
 
 Standing contract: `README.md`. Prerequisite: `inspect-project.md`.
 
+**Primitives:** `../process/grilling.md` — nearly every open question here is a decision, not a fact.
+
 ---
 
 ## 1. Objective

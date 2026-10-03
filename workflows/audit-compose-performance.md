@@ -2,6 +2,8 @@
 
 Standing contract: `README.md`. Prerequisite: `inspect-project.md`.
 
+**Primitives:** `../process/diagnostic-loop.md` — the loop is a Macrobenchmark run; never diagnose jank by eye.
+
 ---
 
 ## 1. Objective

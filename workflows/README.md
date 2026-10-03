@@ -4,6 +4,8 @@ Reusable procedures for an AI coding agent working on **existing production** An
 
 **Companion reference set:** `../references/` — these workflows cite it rather than restating rules. `../references/README.md` defines the `MUST` / `SHOULD` / `MAY` contract and the `[OFFICIAL]` / `[DEFAULT]` / `[UNVERIFIED]` provenance tags used throughout.
 
+**Companion process layer:** `../process/` — the *mechanics* a workflow invokes: the frontier interview, red-green at agreed seams, feedback-loop-before-hypothesis, the two-axis review, vertical slicing. A workflow is a procedure; a primitive is a mechanic. Each workflow that invokes one names it under **Primitives** in its header. `../process/README.md`.
+
 ---
 
 ## The standing contract
@@ -126,6 +128,19 @@ Write "None." if none.>
 
 ## Workflow index
 
+### Process primitives — invoked by the workflows below
+
+| Primitive | Mechanic |
+|---|---|
+| `../process/grilling.md` | Frontier interview: look facts up, ask only decisions, one numbered round with recommendations |
+| `../process/vertical-slice.md` | Tracer-bullet slicing; expand → migrate → contract for wide refactors |
+| `../process/tdd.md` | Red before green, at pre-agreed seams. The KMP seam table |
+| `../process/diagnostic-loop.md` | A red-capable command **before** any hypothesis. Ranked loop constructions |
+| `../process/two-axis-review.md` | Standards and spec as independent axes, never merged |
+| `../process/handoff.md` | Session state for the next agent, including the toolchain |
+| `../process/retro.md` | Improve the environment — checks over prose |
+| `../process/writing-for-agents.md` | Conventions for agent-facing documents |
+
 ### Foundation — read first
 
 | Workflow | Use when |
@@ -210,4 +225,7 @@ Write "None." if none.>
 | "roll it out on Play" | `release-android.md` |
 | "submit to the App Store" | `release-ios.md` |
 
-If no workflow fits, **MUST** still apply the standing contract above: inspect first, match the codebase, do not migrate without approval, report in the base format.
+| "what did we decide / I'm out of context" | `../process/handoff.md` |
+| "how could this session have gone better?" | `../process/retro.md` |
+
+If no workflow fits, **MUST** still apply the standing contract above: inspect first, match the codebase, do not migrate without approval, report in the base format. The primitives in `../process/` are available to any task, whether or not a workflow names them.

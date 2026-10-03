@@ -2,6 +2,8 @@
 
 Standing contract: `README.md`. Prerequisite: `inspect-project.md`.
 
+**Primitives:** `../process/tdd.md` (per slice, at the agreed seams), `../process/two-axis-review.md` (before reporting done), `../process/vertical-slice.md` (if the feature needs more than one session).
+
 ---
 
 ## 1. Objective
@@ -129,22 +131,38 @@ See `../references/android/compose-ui.md`.
 
 **MUST** verify the destination is actually reachable — an unregistered route is the most common silent failure of this workflow.
 
-### 4.8 Tests
+### 4.8 Tests — red before green, at the agreed seams
 
-Match the inspected test style. **MUST** add:
+Run `../process/tdd.md`. Steps 4.2–4.7 above are the implementation side of a loop, not a phase that
+precedes testing: for each seam, write the failing test, see it fail **for the expected reason**,
+then write the minimum code that satisfies it.
 
-| Tier | Coverage |
+Match the inspected test style. **MUST** cover:
+
+| Seam | Coverage |
 |---|---|
 | ViewModel | every state transition agreed in 4.1, including the error path |
 | Content composable | each state renders; each action invokes its lambda |
-| Repository method, if one was added | success and failure |
+| Repository method, if one was added | success, failure, and cancellation propagation |
+| Mapper, if one was added | unknown field, absent field |
 | Acknowledgement path, if state-held messages were used | message added, then cleared |
 
-**MUST** use fakes, in the project's existing fake style. See `../references/quality/testing-strategy.md`.
+**MUST** use fakes at the *interface* seam, in the project's existing fake style — not mocks of a
+collaborator inside the unit under test. Seam table and the tool per seam: `../process/tdd.md`.
+Strategy: `../references/quality/testing-strategy.md`.
 
-### 4.9 Validate
+**SHOULD** iterate with a single test class (`jvmTest --tests '<FQN>'`); `allTests` once per slice,
+not per cycle.
+
+### 4.9 Validate, then review
 
 Run section 7.
+
+Then run `../process/two-axis-review.md` before reporting done: the **Standards** axis against the
+codebase's conventions and `../references/`, and the **Spec** axis against the acceptance criteria
+from `clarify-requirements.md` or the plan. Report the two axes separately; **MUST NOT** merge them
+into a single verdict. Findings the user asks to be fixed are fixed in a following step, not
+silently folded into this one.
 
 ---
 

@@ -2,6 +2,8 @@
 
 Standing contract: `README.md`. Prerequisite: `inspect-project.md` (light — enough to know the codebase's conventions, which the review judges against).
 
+**Primitives:** `../process/two-axis-review.md` — standards and spec as independent axes.
+
 ---
 
 ## 1. Objective
@@ -42,11 +44,33 @@ git diff <base>...HEAD -- '*.kt' '*.kts' '*.xml' '*.toml'
 
 ## 4. Step-by-step procedure
 
-### 4.1 Verify the intent is met
+Run `../process/two-axis-review.md`. This procedure is its Android/KMP instance: **4.1 is the Spec
+axis; 4.2–4.4 are the Standards axis.** Keep them independent — a change can pass one and fail the
+other, and a merged verdict hides whichever axis had fewer findings.
+
+### 4.0 Pin the fixed point — MUST
+
+```bash
+git rev-parse --verify <fixed-point>       # a commit, tag, branch, or merge base
+git diff --stat <fixed-point>...HEAD       # three dots — against the merge base
+git log --oneline <fixed-point>..HEAD
+```
+
+**MUST** confirm the diff is non-empty before reviewing. **MUST NOT** guess the fixed point — ask,
+with a recommendation (usually the base branch's merge base).
+
+**Where the host supports subagents**, run the two axes as parallel subagents with fresh context,
+each under 400 words, each citing `file:line`. An agent that just wrote the code cannot review it
+without bias. Where it does not, run two sequential passes and **MUST** say so in the report.
+
+### 4.1 Spec axis — verify the intent is met
 
 Does the change do what it claims? Trace each acceptance criterion or stated goal to the code. A change that does something else well is still wrong.
 
-### 4.2 Hunt defects — in this order
+### 4.2 Standards axis — hunt defects, in this order
+
+Sources, highest precedence first: the repository's own conventions, then `../references/`, then the
+smell baseline in `../process/two-axis-review.md`. **The repo overrides both.**
 
 | Priority | Look for | Reference |
 |---|---|---|

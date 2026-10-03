@@ -2,6 +2,8 @@
 
 Standing contract: `README.md`. Prerequisite: `inspect-project.md`.
 
+**Primitives:** `../process/diagnostic-loop.md` — **mandatory gate** at step 4.1, `../process/tdd.md` (the regression test is the red step).
+
 ---
 
 ## 1. Objective
@@ -51,20 +53,39 @@ git log --oneline <lastGoodTag>..HEAD -- <suspect-path>
 
 ## 4. Step-by-step procedure
 
-### 4.1 Reproduce — MUST, before any code change
+### 4.1 Build the feedback loop — MUST, before any theory and before any code change
 
-**MUST** reproduce at the cheapest level that shows the defect:
+Run `../process/diagnostic-loop.md`. This step **is** that primitive; the rules below are its
+summary, not a substitute for it.
+
+**MUST NOT** form a hypothesis, and **MUST NOT** read source looking for a cause, until a
+red-capable command exists. Jumping to a theory first is the failure this step prevents.
+
+Reproduce at the cheapest level that shows the defect:
 
 | Level | When |
 |---|---|
 | A failing unit test in `commonTest` | logic, mapping, state production — always try first |
+| Turbine on the emitting `Flow` | wrong state, wrong order, missing emission |
+| `MockEngine` replaying the exact payload | triggered by a specific server response |
+| Real in-memory Room DB, seeded | query, constraint, converter, or migration defect |
+| The same `commonTest` on `iosSimulatorArm64` | works on Android, fails on iOS — the divergence *is* the finding |
 | A failing Compose UI test | rendering, interaction, state-to-UI wiring |
-| Instrumented / on-device | platform behaviour, permissions, lifecycle, insets |
+| Macrobenchmark | jank, startup, scroll. Numbers, never impressions |
+| Instrumented / on-device | platform behaviour, permissions, process death, lifecycle, insets |
+| `bundleRelease` and install | "only in release" — R8 |
 | Manual on device | only when no automated level can express it |
+
+Full ranked list with costs: `../process/diagnostic-loop.md` § Loop constructions.
+
+The loop is ready only when **all four** hold — **red-capable** (fails on *this* bug, not a
+neighbour), **deterministic** (same verdict every run; pin time, seed RNG, fix the locale),
+**fast** (seconds), **agent-runnable** (no human tapping a screen).
 
 **MUST NOT** proceed to a fix without a reproduction, or without an approved D1.
 
-**MUST** record the exact reproduction: command, test name, or step sequence.
+**MUST** record the exact reproduction: command, test name, or step sequence — verbatim, so anyone
+can re-run it.
 
 ### 4.2 Locate the cause, not the symptom — MUST
 

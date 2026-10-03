@@ -2,6 +2,8 @@
 
 Standing contract: `README.md`. Prerequisite: `inspect-project.md`.
 
+**Primitives:** `../process/tdd.md` — real components at the DAO, HTTP and DI seams.
+
 ---
 
 ## 1. Objective

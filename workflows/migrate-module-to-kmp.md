@@ -2,6 +2,8 @@
 
 Standing contract: `README.md`. Prerequisites: `inspect-project.md`, **and an approved stage plan from `assess-kmp-adoption.md`**.
 
+**Primitives:** `../process/vertical-slice.md` — each stage is a slice with its own green build.
+
 ---
 
 ## 1. Objective

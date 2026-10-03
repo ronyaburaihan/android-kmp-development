@@ -2,6 +2,8 @@
 
 Standing contract: `README.md`. Prerequisite: none — this runs **before** `inspect-project.md` when the request is ambiguous, and is the first step of `plan-feature.md`.
 
+**Primitives:** `../process/grilling.md` — the question step **is** the frontier interview.
+
 ---
 
 ## 1. Objective
@@ -63,7 +65,44 @@ Ask **once**, as a single list, only the questions whose answers change the work
 | Non-functional | Performance budget? Accessibility? Localisation? Analytics events? |
 | Scope | What is explicitly **not** part of this? |
 
-**MUST NOT** ask what the codebase can answer (which DI, which navigation). **MUST NOT** ask one question per message.
+### The frontier — MUST
+
+Run `../process/grilling.md`. Ask only the questions on the **frontier**: the ones answerable *now*,
+without guessing at answers you have not heard yet. A question whose wording presumes an unsettled
+decision waits for that decision.
+
+```
+"Should the profile cache survive process death?"      → frontier (independent)
+"Which Room migration strategy for the cache table?"   → not frontier
+                                                         (presumes caching, presumes Room)
+```
+
+**Split facts from decisions — MUST.** A **fact** is true of this codebase or platform right now;
+**MUST** go and find it — dispatch a subagent or read the file — and **MUST NOT** ask the user.
+A **decision** is a choice only the user can make; ask it.
+
+| Fact — look it up | Decision — ask |
+|---|---|
+| Which DI container, navigation library, HTTP client | Platform scope: Android only, or iOS too |
+| Whether the endpoint or table already exists | Offline behaviour, and behaviour on failure |
+| Which KMP targets are configured | Whether state survives process death |
+| Whether an iOS consumer exists | Native SwiftUI vs Compose Multiplatform |
+| What `minSdk` supports | What is explicitly out of scope |
+
+Asking a user which DI container their own project uses spends their attention on something one
+`grep` answers, and devalues the questions that genuinely need them.
+
+**Give your recommended answer to each question**, so the user can reply "1, 3 yes; 2 no":
+
+```markdown
+**Q1 — Offline behaviour.** Fetch fails and a cached copy exists: show the cache with an
+indicator, or an error?
+*Recommendation:* cache with an indicator. Matches `FeedViewModel.kt:64`.
+```
+
+**MUST NOT** ask one question per message. **MUST NOT** block on a lookup — keep asking settleable
+decisions while it runs; only downstream questions wait. **Stop when the frontier is empty**: every
+branch visited, nothing silently assumed.
 
 ### 4.3 Resolve or default
 
