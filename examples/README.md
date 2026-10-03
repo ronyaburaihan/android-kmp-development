@@ -66,7 +66,7 @@ Every dependency version was confirmed to resolve from Maven Central / Google Ma
 
 ### What the compile caught
 
-Sixteen things that looked correct and failed on exactly one target or at configuration time. Full table with the rule each produced: `DECISIONS.md` § *What the compiler taught us*. Headlines:
+Eighteen things that looked correct and failed on exactly one target, at configuration time, or only in Swift. Full table with the rule each produced: `DECISIONS.md` § *What the compiler taught us*. Headlines:
 
 - `value class` in `commonMain` needs **both** `@JvmInline` and `import kotlin.jvm.JvmInline`.
 - `google()` is required in **both** repository blocks even with no Android target.
