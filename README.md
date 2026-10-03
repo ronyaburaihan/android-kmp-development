@@ -19,31 +19,87 @@ A production-grade Agent Skill for developing, debugging, reviewing, testing, re
 
 ## Installation
 
-The skill is a directory. Install it wherever your agent host discovers skills.
+The skill is a plain directory containing `SKILL.md`. A host discovers it by scanning its skills
+folder and reading the YAML frontmatter (`name`, `description`).
 
-**Claude Code (project-scoped):**
+> **The directory must be named `android-kmp-development`** — matching the `name` in the
+> frontmatter. The git repository is named `…-skill`, so a bare `git clone` produces the wrong
+> directory name. The commands below handle that.
+
+### Claude Code — all projects (user scope)
+
 ```bash
-mkdir -p .claude/skills
-cp -r /path/to/android-kmp-development .claude/skills/
+mkdir -p ~/.claude/skills
+git clone https://github.com/ronyaburaihan/android-kmp-development-skill.git \
+  ~/.claude/skills/android-kmp-development
 ```
 
-**Claude Code (user-scoped, all projects):**
+### Claude Code — one project (project scope)
+
+```bash
+mkdir -p .claude/skills
+git clone https://github.com/ronyaburaihan/android-kmp-development-skill.git \
+  .claude/skills/android-kmp-development
+```
+
+Project scope wins over user scope when both are present — useful for pinning a project to a
+particular revision.
+
+### From a local copy (no git)
+
 ```bash
 mkdir -p ~/.claude/skills
 cp -r /path/to/android-kmp-development ~/.claude/skills/
 ```
 
-**Other Agent-Skills-compatible hosts:** copy the directory into the host's skills location; the host reads `SKILL.md`'s YAML frontmatter (`name`, `description`) for discovery.
+Download-and-extract works too; just rename the extracted folder to `android-kmp-development`.
 
-Invoke by task — the description triggers on Android/KMP/Compose/Kotlin work — or explicitly by name.
+### Other Agent-Skills-compatible hosts
 
-**Nothing in the skill needs installing into the target project.** The compiled example is self-contained; to re-verify it:
+Copy the directory into the host's skills location. Nothing in the skill is Claude Code specific —
+`SKILL.md` is the entry point and every internal path is relative.
+
+### Verify it installed
 
 ```bash
-cd examples/user-profile
-# Gradle ≥ 9.0 and a JDK AGP 9 supports (JDK 25 was used); iOS targets need macOS + Xcode; Android needs the SDK
+ls ~/.claude/skills/android-kmp-development/SKILL.md     # must exist
+head -5 ~/.claude/skills/android-kmp-development/SKILL.md # must show the frontmatter
+```
+
+In a new Claude Code session, `/skills` lists it, and `/android-kmp-development` invokes it
+explicitly. Otherwise it triggers on its description — Android, Kotlin, KMP, Compose, Compose
+Multiplatform, Koin, Ktor, Room, DataStore, coroutines/Flow, iOS interop, or Play/App Store
+release work. A skill added mid-session is not picked up until the session restarts.
+
+### Update
+
+```bash
+git -C ~/.claude/skills/android-kmp-development pull
+```
+
+Re-read `references/version-matrix.md` after updating: it carries a verification date, and version
+numbers and store deadlines go stale.
+
+### Uninstall
+
+```bash
+rm -rf ~/.claude/skills/android-kmp-development
+```
+
+### Optional: re-verify the compiled example
+
+Nothing needs installing into your own project — the example is self-contained. To reproduce its
+verification record (`examples/README.md`):
+
+```bash
+cd ~/.claude/skills/android-kmp-development/examples/user-profile
+export JAVA_HOME=<a JDK that AGP 9 supports — JDK 25 was used>
 gradle allTests compileAndroidMain compileKotlinIosArm64 linkDebugFrameworkIosSimulatorArm64
 ```
+
+Requires Gradle ≥ 9.0. The Android target needs the Android SDK (`compileSdk 36`); the iOS targets
+and the Swift check need macOS with Xcode. On Linux, `gradle jvmTest compileAndroidMain` verifies
+everything except iOS.
 
 ## Design principles the skill enforces
 
