@@ -14,6 +14,7 @@
 #   kiro       AWS Kiro           (~/.kiro/steering | .kiro/steering)
 #   trae       Trae               (~/.trae/user_rules | .trae/rules)
 #   windsurf   Windsurf           (.windsurf/rules)
+#   antigravity  Google Antigravity (~/.gemini/config/rules | .agents/rules)
 #   copilot    GitHub Copilot     (.github/copilot-instructions.md)
 #   all        AGENTS.md + every project-scope adapter above
 #
@@ -27,7 +28,7 @@ while [ $# -gt 0 ]; do case "$1" in
   --scope) SCOPE="$2"; shift 2;;
   --project-dir) PROJECT_DIR="$2"; shift 2;;
   *) echo "unknown option: $1" >&2; exit 2;; esac; done
-[ -n "$AGENT" ] || { sed -n '2,30p' "$0" | sed 's/^# \{0,1\}//'; exit 2; }
+[ -n "$AGENT" ] || { sed -n '2,31p' "$0" | sed 's/^# \{0,1\}//'; exit 2; }
 
 HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 SKILL_SRC="$(dirname "$HERE")"
@@ -97,6 +98,11 @@ case "$AGENT" in
                         || render trae-rule.md "$PROJECT_DIR/.trae/rules/$SKILL_NAME.md" ;;
   windsurf)
     place_skill; render windsurf-rule.md "$PROJECT_DIR/.windsurf/rules/$SKILL_NAME.md" ;;
+  antigravity)
+    # Antigravity also reads AGENTS.md natively; .agents/rules gives a declared trigger.
+    place_skill
+    [ "$SCOPE" = user ] && render antigravity-rule.md "$HOME/.gemini/config/rules/$SKILL_NAME.md" \
+                        || render antigravity-rule.md "$PROJECT_DIR/.agents/rules/$SKILL_NAME.md" ;;
   copilot)
     place_skill; render AGENTS.md "$PROJECT_DIR/.github/copilot-instructions.md" ;;
   all)
@@ -106,6 +112,7 @@ case "$AGENT" in
     render kiro-steering.md "$PROJECT_DIR/.kiro/steering/$SKILL_NAME.md"
     render trae-rule.md    "$PROJECT_DIR/.trae/rules/$SKILL_NAME.md"
     render windsurf-rule.md "$PROJECT_DIR/.windsurf/rules/$SKILL_NAME.md"
+    render antigravity-rule.md "$PROJECT_DIR/.agents/rules/$SKILL_NAME.md"
     render AGENTS.md       "$PROJECT_DIR/.github/copilot-instructions.md"
     ;;
   *) echo "unknown agent: $AGENT" >&2; exit 2;;

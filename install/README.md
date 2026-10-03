@@ -16,6 +16,7 @@ install/
   kiro-steering.md   Kiro steering file (inclusion: always)
   trae-rule.md       Trae project rule
   windsurf-rule.md   Windsurf rule (trigger: always_on)
+  antigravity-rule.md  Google Antigravity rule (trigger: always_on)
   install.sh         places the skill and renders the right adapter
 ```
 
@@ -39,6 +40,7 @@ Every adapter is generated from `AGENTS.md`, so there is one source of truth. Th
 | `kiro` | steering file | `.kiro/steering/*.md` | `~/.kiro/steering/*.md` |
 | `trae` | project rule | `.trae/rules/*.md` | `~/.trae/user_rules/*.md` |
 | `windsurf` | rule | `.windsurf/rules/*.md` | — |
+| `antigravity` | rule with a declared trigger | `.agents/rules/*.md` | `~/.gemini/config/rules/*.md` |
 | `copilot` | instructions | `.github/copilot-instructions.md` | — |
 | `all` | `AGENTS.md` + every project-scope adapter | all of the above | — |
 
@@ -63,6 +65,9 @@ OpenAI **Codex** · **OpenCode** · **Cursor** · **Aider** · **goose** · **Ze
 **Junie** (JetBrains) · **Devin** · **Windsurf** · **Factory** · **RooCode** · **Kilo Code** ·
 **Augment Code** · **Ona** · **Phoenix** · **Semgrep** · UiPath Autopilot
 
+Not on that list but reading `AGENTS.md` natively all the same: **Google Antigravity** (IDE 1.20.5+,
+which also honours `GEMINI.md`).
+
 So for most of the list, `./install/install.sh agents` is the whole job. The dedicated adapters
 exist where the agent's own format offers something `AGENTS.md` cannot:
 
@@ -73,6 +78,7 @@ exist where the agent's own format offers something `AGENTS.md` cannot:
 | **Kiro** | steering `inclusion:` modes (`always`, `fileMatch`, `manual`, `auto`) |
 | **Trae** | `.trae/rules/` with Cursor-style frontmatter; global rules live at `~/.trae/user_rules` |
 | **Windsurf** | `trigger: always_on` frontmatter |
+| **Google Antigravity** | reads `AGENTS.md` natively, but `.agents/rules/*.md` requires a declared `trigger:` and adds a user scope under `~/.gemini/config/rules/`. Antigravity also honours `GEMINI.md` and legacy `.agent/rules/` |
 
 ## Manual install
 
@@ -107,7 +113,8 @@ should read `references/version-matrix.md` rather than answer from memory.
 
 The bootstrap and the adapters are **generated and path-verified** — the installer was run into a
 throwaway project and all 57 routing targets resolved from the installed copy. They have **not**
-been behaviourally tested inside Codex, Cursor, Kiro, Trae, Windsurf, OpenCode or Copilot. Whether
+been behaviourally tested inside Codex, Cursor, Kiro, Trae, Windsurf, Antigravity, OpenCode or
+Copilot. Whether
 each agent honours an always-on rule file of this shape, and actually follows the routing table
 rather than guessing, is unverified. See `../LIMITATIONS.md`.
 

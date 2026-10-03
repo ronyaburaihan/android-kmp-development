@@ -37,7 +37,8 @@ every claim labelled by how well it is known.
 | [`references/`](references/) | **35 topic documents.** Every normative statement tagged **MUST / SHOULD / MAY** and **[OFFICIAL] / [DEFAULT] / [UNVERIFIED]**. |
 | [`workflows/`](workflows/) | **24 step-by-step procedures**, each with objective, required inputs, project inspection, procedure, decision points, implementation rules, validation requirements, failure handling, completion criteria and report format. |
 | [`examples/`](examples/) | A **compiled and tested** KMP vertical slice — Android, JVM and both iOS targets; Compose UI; Room 3 with a seeded migration test; a Swift-facing facade whose smoke file compiles against the generated framework — plus the rationale for every decision. |
-| [`install/`](install/README.md) | Bootstrap adapters and an installer for **any** agent — Claude Code, Codex, OpenCode, Cursor, Kiro, Trae, Windsurf, Copilot and every `AGENTS.md` reader. |
+| [`install/`](install/README.md) | Bootstrap adapters and an installer for **any** agent — Claude Code, Codex, OpenCode, Cursor, Kiro, Trae, Windsurf, Antigravity, Copilot and every
+`AGENTS.md` reader. |
 | [`templates/`](templates/) | 15 fill-in skeletons: spec, plan, task report, ADR, PR, bug report, commit message, release checklist, version catalog, module build file, CI config, and a project-structure convention with a scaffold script. |
 | [`EVALUATION.md`](EVALUATION.md) | 48 checks and 8 scenarios for judging whether an agent is actually using the skill correctly. |
 | [`LIMITATIONS.md`](LIMITATIONS.md) | Every unverified claim, exactly what was and was not compiled, topics not covered, and the facts corrected during verification. |
@@ -90,14 +91,17 @@ cd android-kmp-development-skill
 | `kiro` | AWS Kiro (steering, `inclusion: always`) | `.kiro/steering/` | `~/.kiro/steering/` |
 | `trae` | Trae | `.trae/rules/` | `~/.trae/user_rules/` |
 | `windsurf` | Windsurf (`trigger: always_on`) | `.windsurf/rules/` | — |
+| `antigravity` | Google Antigravity ("agy") | `.agents/rules/` | `~/.gemini/config/rules/` |
 | `copilot` | GitHub Copilot | `.github/copilot-instructions.md` | — |
 | `all` | `AGENTS.md` + every project-scope adapter | all of the above | — |
 
 `agents` alone already covers **Codex, OpenCode, Cursor, Aider, goose, Zed, Warp, VS Code, GitHub
 Copilot, Gemini CLI, Jules, Amp, Junie, Devin, Windsurf, Factory, RooCode, Kilo Code, Augment Code,
 Ona, Phoenix, Semgrep** and UiPath Autopilot — every product listed at
-[agents.md](https://agents.md/). The dedicated adapters exist only where an agent's own format adds
-something `AGENTS.md` cannot express.
+[agents.md](https://agents.md/). **Google Antigravity** reads `AGENTS.md` natively too (since IDE
+1.20.5), so `agents` works there as well — the `antigravity` adapter exists for the user scope and
+the declared trigger. The dedicated adapters exist only where an agent's own format adds something
+`AGENTS.md` cannot express.
 
 **Restart the agent session afterwards** — instruction files are read at session start.
 
