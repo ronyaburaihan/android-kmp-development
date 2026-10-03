@@ -10,6 +10,7 @@ Fill-in skeletons. Each is the shape the matching workflow expects; none contain
 | `bug-report.md` | `workflows/diagnose-and-fix-bug.md` | recording a defect to reproduce or hand off |
 | `adr.md` | any decision point marked structural | recording a decision and its alternatives |
 | `pr-description.md` | `workflows/review-code.md` | opening a PR |
+| `commit-message.md` | any workflow that produces a commit | writing a commit message (Conventional Commits, scope conventions, no AI attribution) |
 | `release-checklist.md` | `workflows/prepare-release.md` | gating a release |
 | `libs.versions.toml` | `workflows/upgrade-dependencies.md`, new modules | starting a version catalog; shows the lockstep comments |
 | `kmp-module.build.gradle.kts` | new shared module | declaring targets and source sets |

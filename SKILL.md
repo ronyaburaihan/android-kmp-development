@@ -109,6 +109,7 @@ rationale for each decision.
 | Layering, domain design, boundaries | `references/architecture/clean-architecture.md` |
 | Module structure, convention plugins | `references/architecture/modularization.md` |
 | Where a new file goes in the house package-by-layer / MVI structure | `templates/structure/PROJECT_STRUCTURE.md` (+ `templates/structure/scaffold.sh`) |
+| Writing a commit message | `templates/commit-message.md` |
 | Layer rules, repository boundary | `references/android/app-architecture.md` |
 | Kotlin style, naming, API surface | `references/kotlin/coding-conventions.md` |
 | A worked end-to-end slice to pattern-match against | `examples/CATALOG.md` → the file, then `examples/DECISIONS.md` for the why |

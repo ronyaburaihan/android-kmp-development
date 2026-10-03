@@ -72,6 +72,10 @@ If part of the task is blocked, **MUST** complete every unblocked part and state
 
 **MUST NOT** guess past a stop condition to keep momentum.
 
+### 7. Commits — MUST
+
+**MUST NOT** commit or push unless the user asked. When a workflow does produce commits — `refactor.md`, `upgrade-dependencies.md` and `remediate-deprecations.md` work in independently verified steps — each message follows `../templates/commit-message.md`: Conventional Commits, scope matching the existing history, and **no `Co-Authored-By` or AI attribution**.
+
 ---
 
 ## Base report format
