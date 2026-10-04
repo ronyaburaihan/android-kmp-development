@@ -118,7 +118,7 @@ For each, record:
 | Question | Where to look |
 |---|---|
 | State: one `uiState` or several flows? data class or sealed interface? | ViewModel |
-| One-off events: folded into state, a `Channel`/`SharedFlow`, or an MVI `Effect` (house structure)? | ViewModel |
+| One-off events: folded into state, or a `Channel`/`SharedFlow` effect? (house structure: folded into state) | ViewModel |
 | `stateIn` policy actually used (`WhileSubscribed(n)`, `Eagerly`, none)? | ViewModel |
 | Collection in UI: `collectAsStateWithLifecycle` or `collectAsState`? | screen composable |
 | Route/content split, or ViewModel passed into the content composable? | screen composable |

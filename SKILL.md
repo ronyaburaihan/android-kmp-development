@@ -137,7 +137,7 @@ rationale for each decision.
 | Dependency injection | `references/libraries/koin-di.md` |
 | Layering, domain design, boundaries | `references/architecture/clean-architecture.md` |
 | Module structure, convention plugins | `references/architecture/modularization.md` |
-| Where a new file goes in the house package-by-layer / MVI structure | `templates/structure/PROJECT_STRUCTURE.md` (+ `templates/structure/scaffold.sh`) |
+| Where a new file goes in the house package-by-layer / MVVM-UDF structure | `templates/structure/PROJECT_STRUCTURE.md` (+ `templates/structure/scaffold.sh`) |
 | Writing a commit message | `templates/commit-message.md` |
 | Layer rules, repository boundary | `references/android/app-architecture.md` |
 | Kotlin style, naming, API surface | `references/kotlin/coding-conventions.md` |
@@ -156,7 +156,7 @@ Full index with one-line topic summaries: `references/README.md`, `workflows/REA
 
 ## Project structure convention
 
-If the repository contains a `PROJECT_STRUCTURE.md` (the house convention: package-by-layer `core` → `domain` → `data` → `presentation`, MVI screen sets of `Screen`/`ViewModel`/`UiState`/`UiEvent`/`UiEffect`), **file placement MUST follow it** and it overrides the module-based defaults in `references/architecture/modularization.md`. The template, placement rules, naming, and the `Effect` trade-off are in `templates/structure/PROJECT_STRUCTURE.md`; `templates/structure/scaffold.sh` generates the tree, the MVI base types, and screen sets. Layer *behaviour* rules (repository boundary, cancellation, errors) still come from the references.
+If the repository contains a `PROJECT_STRUCTURE.md` (the house convention: package-by-layer `core` → `domain` → `data` → `presentation`, MVVM/UDF screen sets of `Screen`/`ViewModel`/`UiState`, with `Route` + `NavigationActions`/`Actions`), **file placement MUST follow it** and it overrides the module-based defaults in `references/architecture/modularization.md`. The template, placement rules, naming, and the app-state/CompositionLocal rules are in `templates/structure/PROJECT_STRUCTURE.md`; `templates/structure/scaffold.sh` generates the tree, the navigation key types, and screen sets. Layer *behaviour* rules (repository boundary, cancellation, errors) still come from the references.
 
 ## Architecture
 

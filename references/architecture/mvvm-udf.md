@@ -218,7 +218,7 @@ fun FeedScreen(uiState: FeedUiState, onMessageShown: (Long) -> Unit) {
 
 The same pattern applies to navigation: model "the user should now be on screen X" as state, let the navigation layer react, and acknowledge.
 
-**MUST NOT** use `Channel`, `SharedFlow(replay = 0)`, or a `LiveData<Event<T>>` wrapper for ViewModel-to-UI signals — **unless the codebase's declared structure is MVI with `Effect`** (`../../templates/structure/PROJECT_STRUCTURE.md`). In that case match it: the template's `MviViewModel` uses a `Channel(BUFFERED)` so effects are buffered while the UI is stopped and delivered once, and durable outcomes still go in `UiState`. Record the deviation in the report.
+**MUST NOT** use `Channel`, `SharedFlow(replay = 0)`, or a `LiveData<Event<T>>` wrapper for ViewModel-to-UI signals — **unless the codebase already declares an MVI structure with an effect type**. In that case match it: back the effects with a `Channel(BUFFERED)` collected under `repeatOnLifecycle(STARTED)`, keep durable outcomes in `UiState`, and record the deviation in the report. The house structure (`../../templates/structure/PROJECT_STRUCTURE.md`) follows this rule and has no effect channel.
 
 ---
 

@@ -197,9 +197,9 @@ To force a specific procedure, name it: *"use the refactor workflow"*, *"run the
 
 If your repository contains a `PROJECT_STRUCTURE.md`, file placement follows it and overrides the
 skill's module-based defaults. A ready-made convention — package-by-layer `core → domain → data →
-presentation` with MVI screen sets — ships at
+presentation` with MVVM/UDF screen sets — ships at
 [`templates/structure/`](templates/structure/PROJECT_STRUCTURE.md), with a `scaffold.sh` that
-generates the tree, the MVI base types and screen sets.
+generates the tree, the navigation key types and screen sets.
 
 ---
 

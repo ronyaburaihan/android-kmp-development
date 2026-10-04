@@ -3,7 +3,7 @@
 #   scaffold.sh init    --root <srcDir> --package <pkg>
 #   scaffold.sh screen  <Name>    --root <srcDir> --package <pkg>
 #   scaffold.sh feature <feature> --root <srcDir> --package <pkg>
-# Generates directories, the presentation/state MVI base types, and 5-file screen sets.
+# Generates directories, the navigation key types, and 3-file MVVM/UDF screen sets.
 # Only creates files that do not exist; never overwrites.
 set -euo pipefail
 
@@ -32,101 +32,32 @@ init() {
     domain/event/{conversation,translation,speech,subscription} \
     data/repository data/source/local/room/{database,dao,entity,migration} data/source/local/datastore \
     data/source/remote/auth/dto data/model data/mapper data/analytics/{mapper,tracker} data/di \
-    presentation/app presentation/component/{common,button,dialog,language,audio,animation,loading,error,toolbar,bottomsheet} \
-    presentation/screen presentation/navigation presentation/state presentation/theme; do mk "$d"; done
+    presentation/app presentation/component presentation/screen presentation/navigation \
+    presentation/permission presentation/theme presentation/util presentation/di; do mk "$d"; done
 
-  write presentation/state/UiState.kt <<K
-package $PKG.presentation.state
-
-/** Immutable snapshot of one screen. Implementations are data classes with val properties only. */
-public interface UiState
-K
-  write presentation/state/UiEvent.kt <<K
-package $PKG.presentation.state
-
-/** A user or system event handled by a ViewModel. One sealed hierarchy per screen. */
-public interface UiEvent
-K
-  write presentation/state/UiEffect.kt <<K
-package $PKG.presentation.state
-
-/**
- * A one-off effect consumed exactly once by the UI (snackbar, haptic, forward navigation).
- * Anything the user could miss and need again belongs in [UiState], not here.
- * See PROJECT_STRUCTURE.md § The Effect trade-off.
- */
-public interface UiEffect
-K
-  write presentation/state/MviViewModel.kt <<K
-package $PKG.presentation.state
-
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
-import kotlinx.coroutines.CancellationException
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.channels.Channel
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.receiveAsFlow
-import kotlinx.coroutines.flow.update
-import kotlinx.coroutines.launch
-
-/**
- * The MVI container. One immutable [uiState], events in through [handle], effects out through
- * [effects] — a buffered channel, so an effect emitted while the UI is stopped is held until a
- * collector resumes and delivered exactly once. Lost only on process death; durable outcomes
- * belong in state.
- */
-public abstract class MviViewModel<S : UiState, E : UiEvent, F : UiEffect>(
-    initialState: S,
-) : ViewModel() {
-
-    private val _uiState = MutableStateFlow(initialState)
-    public val uiState: StateFlow<S> = _uiState.asStateFlow()
-
-    private val _effects = Channel<F>(Channel.BUFFERED)
-    public val effects: Flow<F> = _effects.receiveAsFlow()
-
-    /** The only entry point from the UI. */
-    public fun handle(event: E) { onEvent(event) }
-
-    protected abstract fun onEvent(event: E)
-
-    protected val currentState: S get() = _uiState.value
-
-    /** Atomic state transition. */
-    protected fun reduce(transform: S.() -> S) { _uiState.update(transform) }
-
-    protected fun emitEffect(effect: F) { _effects.trySend(effect) }
-
-    /** Launch in [viewModelScope] with the cancellation contract enforced. */
-    protected fun launch(block: suspend CoroutineScope.() -> Unit): Job = viewModelScope.launch {
-        try { block() } catch (e: CancellationException) { throw e }
-    }
-}
-K
   write presentation/navigation/AppRoute.kt <<K
 package $PKG.presentation.navigation
 
 import kotlinx.serialization.Serializable
 
-/** Navigation keys: data, not screens. Carry ids, never whole models. */
+/** Full-screen destinations: data, not screens. Carry ids, never whole models. */
+@Serializable
 public sealed interface AppRoute {
-    @Serializable public data object Home : AppRoute
+    @Serializable public data object Main : AppRoute
 }
 K
-  write presentation/navigation/NavigationEffect.kt <<K
+  write presentation/navigation/MainTab.kt <<K
 package $PKG.presentation.navigation
 
-import $PKG.presentation.state.UiEffect
+import kotlinx.serialization.Serializable
 
-/** Forward-navigation requests screens hand to the app-level owner of the back stack. */
-public sealed interface NavigationEffect : UiEffect {
-    public data class To(val route: AppRoute) : NavigationEffect
-    public data object Back : NavigationEffect
+/**
+ * Destinations of the bottom-navigation host. A separate type from [AppRoute] so a tab can
+ * never be sent to the app-level back stack, and the reverse.
+ */
+@Serializable
+public sealed interface MainTab {
+    @Serializable public data object Home : MainTab
 }
 K
   echo "init done: $BASE"
@@ -134,53 +65,52 @@ K
 
 screen() {
   local N="$NAME"; [ -n "$N" ] || { echo "screen <Name> required"; exit 2; }
+  case "$N" in -*) echo "screen <Name> required"; exit 2;; esac
   local lc; lc="$(echo "$N" | tr '[:upper:]' '[:lower:]')"
   local P="presentation/screen/$lc"
   write "$P/${N}UiState.kt" <<K
 package $PKG.presentation.screen.$lc
 
-import $PKG.presentation.state.UiState
+import androidx.compose.runtime.Immutable
 
+/** Everything ${N}Screen draws. One immutable object; no lambdas, no flows. */
+@Immutable
 public data class ${N}UiState(
-    val isLoading: Boolean = false,
-) : UiState
-K
-  write "$P/${N}UiEvent.kt" <<K
-package $PKG.presentation.screen.$lc
-
-import $PKG.presentation.state.UiEvent
-
-public sealed interface ${N}UiEvent : UiEvent {
-    public data object Load : ${N}UiEvent
-}
-K
-  write "$P/${N}UiEffect.kt" <<K
-package $PKG.presentation.screen.$lc
-
-import $PKG.presentation.state.UiEffect
-
-public sealed interface ${N}UiEffect : UiEffect {
-    public data class ShowMessage(val text: String) : ${N}UiEffect
-}
+    val isLoading: Boolean = true,
+    val isRefreshing: Boolean = false,
+)
 K
   write "$P/${N}ViewModel.kt" <<K
 package $PKG.presentation.screen.$lc
 
-import $PKG.presentation.state.MviViewModel
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
 
-public class ${N}ViewModel : MviViewModel<${N}UiState, ${N}UiEvent, ${N}UiEffect>(${N}UiState()) {
+/** State down through [uiState], actions up as plain method calls. No effect channel. */
+public class ${N}ViewModel : ViewModel() {
 
-    override fun onEvent(event: ${N}UiEvent) {
-        when (event) {
-            ${N}UiEvent.Load -> load()
-        }
-    }
+    private val _uiState = MutableStateFlow(${N}UiState())
+    public val uiState: StateFlow<${N}UiState> = _uiState.asStateFlow()
 
-    private fun load() {
-        launch {
-            reduce { copy(isLoading = true) }
-            // TODO: call a use case / repository; map failures to state or an effect
-            reduce { copy(isLoading = false) }
+    init { refresh() }
+
+    public fun refresh() {
+        if (_uiState.value.isRefreshing) return
+        viewModelScope.launch {
+            _uiState.update { it.copy(isRefreshing = true) }
+            try {
+                // TODO: call a use case / repository; put failures in ${N}UiState
+            } catch (e: CancellationException) {
+                throw e
+            } finally {
+                _uiState.update { it.copy(isLoading = false, isRefreshing = false) }
+            }
         }
     }
 }
@@ -192,36 +122,51 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import org.koin.compose.viewmodel.koinViewModel
 
-/** Route: resolves the ViewModel, collects state and effects. No logic. */
+/** Where ${N} can lead. Built by the navigation graph; the screen knows no routes. */
+@Immutable
+public data class ${N}NavigationActions(
+    val onBack: () -> Unit,
+)
+
+/** What the user can do on ${N}Screen. Built by [${N}Route]; defaults keep previews short. */
+@Immutable
+public data class ${N}Actions(
+    val onRefresh: () -> Unit = {},
+    val onBack: () -> Unit = {},
+)
+
+/** Route: resolves the ViewModel, collects state, merges navigation and ViewModel calls. No layout. */
 @Composable
 public fun ${N}Route(
+    navigationActions: ${N}NavigationActions,
     viewModel: ${N}ViewModel = koinViewModel(),
-    onEffect: (${N}UiEffect) -> Unit = {},
 ) {
-    val state by viewModel.uiState.collectAsStateWithLifecycle()
-    LaunchedEffect(viewModel) {
-        viewModel.effects.collect(onEffect)      // stops with the composition
-    }
-    LaunchedEffect(viewModel) { viewModel.handle(${N}UiEvent.Load) }
-    ${N}Screen(state = state, onEvent = viewModel::handle)
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    ${N}Screen(
+        uiState = uiState,
+        actions = ${N}Actions(
+            onRefresh = viewModel::refresh,
+            onBack = navigationActions.onBack,
+        ),
+    )
 }
 
-/** Content: values and lambdas only. Previewable and testable without DI. */
+/** Screen: values in, lambdas out. Previewable and testable without DI or navigation. */
 @Composable
 public fun ${N}Screen(
-    state: ${N}UiState,
-    onEvent: (${N}UiEvent) -> Unit,
+    uiState: ${N}UiState,
+    actions: ${N}Actions,
     modifier: Modifier = Modifier,
 ) {
     Box(modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-        if (state.isLoading) CircularProgressIndicator()
+        if (uiState.isLoading) CircularProgressIndicator()
     }
 }
 K
