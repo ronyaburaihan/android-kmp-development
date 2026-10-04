@@ -74,7 +74,7 @@ Feature packages (`conversation`, `translation`, `speech`, `texttospeech`, `came
 | `repository/<feature>` | **interfaces only** — `suspend` for one-shot, `Flow` for streams; domain types in signatures | no implementation, no DTO/entity types |
 | `usecase/<feature>` | classes with `operator fun invoke`; real policy or orchestration of ≥2 repositories/services | pass-through forwarders (call the repository directly instead — `../../references/architecture/clean-architecture.md`) |
 | `service/<feature>` | **interfaces** for capabilities with platform implementations: `SpeechRecognizer`, `TextToSpeechEngine`, `OcrService`, `DocumentReader`, `Translator`. Implemented in `core/platform/*` or `data/` | SDK types in signatures |
-| `event/<feature>` | sealed domain events (`SubscriptionEvent.Expired`, `ConversationEvent.Ended`) and their bus interface (`SharedFlow`, replay 0) | ViewModel→UI effects (those are `presentation.*Effect`) |
+| `event/<feature>` | sealed domain events (`SubscriptionEvent.Expired`, `ConversationEvent.Ended`) and their bus interface (`SharedFlow`, replay 0) | ViewModel→UI effects (those are `presentation.*UiEffect`) |
 
 ---
 
@@ -107,7 +107,7 @@ Base types in `presentation/state/`:
 
 ```kotlin
 interface UiState                       // immutable snapshot; data class, all val
-interface UiIntent                      // user/system intention; sealed per screen
+interface UiEvent                       // user/system event; sealed per screen
 interface UiEffect                      // one-off, consumed exactly once; sealed per screen
 ```
 
@@ -115,19 +115,19 @@ Every screen owns exactly five files in `presentation/screen/<name>/`:
 
 | File | Contains |
 |---|---|
-| `<Name>Screen.kt` | `<Name>Route` (resolves the ViewModel, collects state, collects effects) + `<Name>Screen` (stateless content: `state`, `onIntent`, `modifier`) |
-| `<Name>ViewModel.kt` | `class <Name>ViewModel(...) : MviViewModel<<Name>UiState, <Name>Intent, <Name>Effect>` — `handle(intent)` is the only entry point |
+| `<Name>Screen.kt` | `<Name>Route` (resolves the ViewModel, collects state, collects effects) + `<Name>Screen` (stateless content: `state`, `onEvent`, `modifier`) |
+| `<Name>ViewModel.kt` | `class <Name>ViewModel(...) : MviViewModel<<Name>UiState, <Name>UiEvent, <Name>UiEffect>` — `handle(event)` is the only entry point |
 | `<Name>UiState.kt` | `data class <Name>UiState(...) : UiState` — one object, Compose-stable |
-| `<Name>Intent.kt` | `sealed interface <Name>Intent : UiIntent` |
-| `<Name>Effect.kt` | `sealed interface <Name>Effect : UiEffect` |
+| `<Name>UiEvent.kt` | `sealed interface <Name>UiEvent : UiEvent` |
+| `<Name>UiEffect.kt` | `sealed interface <Name>UiEffect : UiEffect` |
 
-`presentation/app/` is the same five-file set for app-level state (`App.kt` hosts theme + navigation; `AppViewModel` owns session/entitlement/connectivity state and `AppEffect` carries app-level one-offs such as `NavigateToPaywall`).
+`presentation/app/` is the same five-file set for app-level state (`App.kt` hosts theme + navigation; `AppViewModel` owns session/entitlement/connectivity state and `AppUiEffect` carries app-level one-offs such as `NavigateToPaywall`).
 
 **`MviViewModel`** (`presentation/state/MviViewModel.kt` — an addition to the listed tree, provided by the scaffold) holds the pattern once:
 
 - `uiState: StateFlow<S>` exposed; `MutableStateFlow` private; `reduce { copy(...) }` is atomic (`update`).
-- `effects: Flow<E>` backed by a **`Channel(BUFFERED)`**: each effect is delivered **at most once**, buffered while no collector is active, and lost only on process death.
-- `handle(intent: I)` dispatches; subclasses implement `onIntent`.
+- `effects: Flow<F>` backed by a **`Channel(BUFFERED)`**: each effect is delivered **at most once**, buffered while no collector is active, and lost only on process death.
+- `handle(event: E)` dispatches; subclasses implement `onEvent`.
 - `CancellationException` rethrown in the provided `launch` helper.
 
 ### The `Effect` trade-off — MUST be understood
@@ -150,7 +150,7 @@ Google's guidance is **"do not send events from the ViewModel to the UI"** (*Str
 |---|---|---|
 | `component/<kind>` | reusable stateless composables (`button`, `dialog`, `language`, `audio`, `animation`, `loading`, `error`, `toolbar`, `bottomsheet`, `common`) — values + lambdas, `modifier` param | ViewModel parameters; feature-specific logic |
 | `navigation/` | `AppRoute.kt` (sealed, `@Serializable` keys), `AppNavigation.kt` (Navigation 3 `NavDisplay` + entry decorators, one owner of the back stack), `NavigationEffect.kt` (navigation intents from screens → app) | navigation calls from inside feature screens |
-| `state/` | `UiState`, `UiIntent`, `UiEffect`, `MviViewModel` | screen-specific types |
+| `state/` | `UiState`, `UiEvent`, `UiEffect`, `MviViewModel` | screen-specific types |
 | `theme/` | `Theme.kt`, `Color.kt`, `Typography.kt`, `Shape.kt`, `Dimension.kt` | hardcoded colours/dimensions in screens |
 
 ---
@@ -166,7 +166,7 @@ Google's guidance is **"do not send events from the ViewModel to the UI"** (*Str
 | DTO | `<Thing>Request` / `<Thing>Response` / `<Thing>Dto` | `TranslateRequest`, `TranslateResponse` |
 | Entity / DAO | `<Thing>Entity` / `<Thing>Dao` | `HistoryEntity` / `HistoryDao` |
 | Mapper | `fun <From>.to<To>()` in `<Feature>Mapper.kt` | `fun TranslateResponse.toDomain()` |
-| Screen set | `<Name>Screen`, `<Name>ViewModel`, `<Name>UiState`, `<Name>Intent`, `<Name>Effect` | `TranslationScreen` … |
+| Screen set | `<Name>Screen`, `<Name>ViewModel`, `<Name>UiState`, `<Name>UiEvent`, `<Name>UiEffect` | `TranslationScreen` … |
 | Route / content | `<Name>Route` / `<Name>Screen` | — |
 | Analytics event | `AnalyticsEvent.<Verb><Noun>` | `AnalyticsEvent.TranslationCompleted` |
 | DI module vals | `coreModule`, `networkModule`, `platformModule()`, `dataModule`, `repositoryModule`, `sourceModule`, `presentationModule` | — |
@@ -189,7 +189,7 @@ Google's guidance is **"do not send events from the ViewModel to the UI"** (*Str
 **Deviations this structure makes from the reference defaults** (record them in reports as "codebase convention"):
 
 1. Package-by-layer in one module instead of Gradle modules → visibility is by `internal` within the module and by lint rule across layers, not by module boundary.
-2. `Intent`/`Effect` MVI instead of method calls + state-held messages → see the trade-off table above.
+2. `UiEvent`/`UiEffect` MVI instead of method calls + state-held messages → see the trade-off table above.
 3. A use case per feature package is expected; still **do not** add pass-through use cases.
 
 ---
