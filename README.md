@@ -45,7 +45,7 @@ well it is known.
 | [`examples/`](examples/) | A **compiled and tested** KMP vertical slice — Android, JVM and both iOS targets; Compose UI; Room 3 with a seeded migration test; a Swift-facing facade whose smoke file compiles against the generated framework — plus the rationale for every decision. |
 | [`install/`](install/README.md) | Bootstrap adapters and an installer for **any** agent — Claude Code, Codex, OpenCode, Cursor, Kiro, Trae, Windsurf, Antigravity, Copilot and every
 `AGENTS.md` reader. |
-| [`templates/`](templates/) | 15 fill-in skeletons: spec, plan, task report, ADR, PR, bug report, commit message, release checklist, version catalog, module build file, CI config, and a project-structure convention with a scaffold script. |
+| [`templates/`](templates/) | 15 fill-in skeletons: spec, plan, task report, ADR, PR, bug report, commit message, release checklist, version catalog, module build file, CI config, and an MVVM/UDF project-structure convention with a scaffold script. |
 | [`EVALUATION.md`](EVALUATION.md) | 60 checks and 12 scenarios for judging whether an agent is actually using the skill correctly. |
 | [`LIMITATIONS.md`](LIMITATIONS.md) | Every unverified claim, exactly what was and was not compiled, topics not covered, and the facts corrected during verification. |
 | [`research/RESEARCH.md`](research/RESEARCH.md) | The sourced research the skill was built from, with an addendum of corrections found by compiling. |
@@ -196,10 +196,39 @@ To force a specific procedure, name it: *"use the refactor workflow"*, *"run the
 ### Project structure convention
 
 If your repository contains a `PROJECT_STRUCTURE.md`, file placement follows it and overrides the
-skill's module-based defaults. A ready-made convention — package-by-layer `core → domain → data →
-presentation` with MVVM/UDF screen sets — ships at
-[`templates/structure/`](templates/structure/PROJECT_STRUCTURE.md), with a `scaffold.sh` that
-generates the tree, the navigation key types and screen sets.
+skill's module-based defaults. A ready-made convention ships at
+[`templates/structure/`](templates/structure/PROJECT_STRUCTURE.md): package-by-layer
+`core → domain → data → presentation`, with an MVVM/UDF presentation layer.
+
+Each screen is three files, plus an optional `component/` package:
+
+```
+presentation/screen/home/
+├── HomeScreen.kt      # HomeRoute (stateful) + HomeScreen (stateless) + previews
+├── HomeViewModel.kt   # one uiState, actions as plain methods
+├── HomeUiState.kt     # one immutable data class
+└── component/         # stateless pieces used only by this screen
+```
+
+- **State down, method calls up.** There is no event or effect type and no effect channel; one-off
+  outcomes such as messages are held in `UiState` and acknowledged by the UI.
+- **Navigation stays out of the screen.** The navigation graph builds a `HomeNavigationActions` and
+  passes it to `HomeRoute`, which merges it with ViewModel methods into the `HomeActions` that the
+  stateless `HomeScreen` receives. No nav controller is read inside a screen.
+- **App-wide state has rules.** A small read-mostly value such as the subscription tier may travel
+  by CompositionLocal and is read in the `Route` only; anything a ViewModel decides on comes from a
+  use case into its `UiState`.
+
+`scaffold.sh` generates the package tree, the navigation key types (`AppRoute`, `MainTab`) and
+screen sets:
+
+```bash
+templates/structure/scaffold.sh init        --root src/commonMain/kotlin --package com.example.app
+templates/structure/scaffold.sh screen Home --root src/commonMain/kotlin --package com.example.app
+```
+
+The generated screen set compiles for JVM, iOS simulator and Android (verified 2026-10-04 against
+the example project's toolchain).
 
 ---
 
