@@ -4,7 +4,7 @@
 
 **Shape:** package-by-layer inside one Gradle module (or one `commonMain` in KMP). Four roots: `core` → `domain` → `data` → `presentation`. Features are packages, not modules.
 
-**Verified:** the MVI base types, navigation keys, and a scaffolded screen set compile for **JVM and iOS simulator** against `../../examples/user-profile/` (Kotlin 2.4.20, Compose Multiplatform 1.12.1, Koin 4.2.2) — see § Verification. The rest of this file is placement rules.
+**Verified:** see § Verification for exactly what was compiled. The rest of this file is placement rules.
 
 ---
 
@@ -74,7 +74,7 @@ Feature packages (`conversation`, `translation`, `speech`, `texttospeech`, `came
 | `repository/<feature>` | **interfaces only** — `suspend` for one-shot, `Flow` for streams; domain types in signatures | no implementation, no DTO/entity types |
 | `usecase/<feature>` | classes with `operator fun invoke`; real policy or orchestration of ≥2 repositories/services | pass-through forwarders (call the repository directly instead — `../../references/architecture/clean-architecture.md`) |
 | `service/<feature>` | **interfaces** for capabilities with platform implementations: `SpeechRecognizer`, `TextToSpeechEngine`, `OcrService`, `DocumentReader`, `Translator`. Implemented in `core/platform/*` or `data/` | SDK types in signatures |
-| `event/<feature>` | sealed domain events (`SubscriptionEvent.Expired`, `ConversationEvent.Ended`) and their bus interface (`SharedFlow`, replay 0) | ViewModel→UI effects (those are `presentation.*UiEffect`) |
+| `event/<feature>` | sealed domain events (`SubscriptionEvent.Expired`, `ConversationEvent.Ended`) and their bus interface (`SharedFlow`, replay 0) | ViewModel→UI signals (those are state in `<Name>UiState`) |
 
 ---
 
@@ -99,59 +99,146 @@ Feature packages (`conversation`, `translation`, `speech`, `texttospeech`, `came
 
 ---
 
-## `presentation/` — Compose + MVI
+## `presentation/` — Compose + MVVM/UDF
 
-### The MVI contract
+State flows down as one immutable `uiState`; actions flow up as plain method calls. This is the official Android pattern (`../../references/architecture/mvvm-udf.md`). There is **no** `UiEvent`/`UiEffect` type and **no** effect channel.
 
-Base types in `presentation/state/`:
-
-```kotlin
-interface UiState                       // immutable snapshot; data class, all val
-interface UiEvent                       // user/system event; sealed per screen
-interface UiEffect                      // one-off, consumed exactly once; sealed per screen
+```
+presentation/
+├── app/           App.kt  AppViewModel.kt  AppUiState.kt  AppState.kt
+├── navigation/    AppRoute.kt  MainTab.kt  AppNavHost.kt  <Area>Graph.kt  NavExtensions.kt
+├── screen/<name>/ <Name>Screen.kt  <Name>ViewModel.kt  <Name>UiState.kt  component/
+├── component/     shared stateless composables
+├── permission/    permission controllers and status types
+├── theme/         AppTheme.kt  Color.kt  Type.kt  Dimens.kt
+├── util/          UiText.kt  CompositionLocals.kt  DeviceLayoutMode.kt
+└── di/            PresentationModule.kt
 ```
 
-Every screen owns exactly five files in `presentation/screen/<name>/`:
+### The screen set — MUST
+
+Every screen owns exactly three files in `presentation/screen/<name>/`, plus an optional `component/` package:
+
+| File | Contains | MUST NOT contain |
+|---|---|---|
+| `<Name>Screen.kt` | `<Name>NavigationActions`, `<Name>Actions`, `<Name>Route` (stateful), `<Name>Screen` (stateless), previews | a nav controller; business logic |
+| `<Name>ViewModel.kt` | `class <Name>ViewModel(...) : ViewModel()` — one `uiState: StateFlow<<Name>UiState>`, public methods for actions | Compose imports; navigation calls; `Channel`/`SharedFlow` to the UI |
+| `<Name>UiState.kt` | `@Immutable data class <Name>UiState(...)` and its derived `val`s | lambdas; flows; mutable collections |
+| `component/*.kt` | stateless pieces used only by this screen — values, lambdas, `modifier` | a ViewModel; reads of app-state CompositionLocals |
+
+Nested screens nest packages: `screen/memory/detail/`, `screen/settings/profile/`.
+
+```kotlin
+// <Name>Screen.kt
+
+/** Where the screen can lead. Built by the navigation graph; the screen knows no routes. */
+@Immutable
+data class HomeNavigationActions(
+    val onOpenPaywall: () -> Unit,
+    val onOpenMemory: (String) -> Unit,
+)
+
+/** What the user can do. Built by HomeRoute; defaults keep previews short. */
+@Immutable
+internal data class HomeActions(
+    val onRefresh: () -> Unit = {},
+    val onProClick: () -> Unit = {},
+    val onMemoryClick: (String) -> Unit = {},
+)
+
+/** Route: ViewModel + navigation. The only place the two meet. No layout. */
+@Composable
+fun HomeRoute(
+    navigationActions: HomeNavigationActions,
+    viewModel: HomeViewModel = koinViewModel(),
+) {
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    HomeScreen(
+        uiState = uiState,
+        actions = HomeActions(
+            onRefresh = viewModel::refresh,
+            onProClick = navigationActions.onOpenPaywall,
+            onMemoryClick = navigationActions.onOpenMemory,
+        ),
+    )
+}
+
+/** Screen: values in, lambdas out. Previewable and testable without DI or navigation. */
+@Composable
+internal fun HomeScreen(
+    uiState: HomeUiState,
+    actions: HomeActions,
+    modifier: Modifier = Modifier,
+)
+```
+
+| Rule | Level |
+|---|---|
+| `<Name>Route` takes `navigationActions` first and the ViewModel last, defaulted to `koinViewModel()`. | MUST |
+| `<Name>Screen` takes `uiState`, `actions`, `modifier` — nothing else. It **MUST NOT** read a nav controller or an app-state CompositionLocal. | MUST |
+| `<Name>NavigationActions` has **no** default values, so a forgotten exit is a compile error. `<Name>Actions` has defaults, for previews. | SHOULD |
+| `<Name>NavigationActions` is consumed by `<Name>Route` only; it is never passed into `<Name>Screen` or a component. | MUST |
+| A click that only navigates goes `navigationActions` → `actions` and skips the ViewModel. | SHOULD |
+| A decision that picks between two destinations (premium gate) is made once, in `<Name>Route` or the ViewModel — never inside a component. | MUST |
+| Layout mode, window size and similar are read once in `<Name>Screen` and passed down as parameters. | SHOULD |
+| Portrait/landscape/tablet variants are one composable with parameters, not copies. | SHOULD |
+| Composable parameters: required first, then `modifier`, then optionals. | MUST [OFFICIAL] |
+| Move a composable to `component/` once `<Name>Screen.kt` passes ~300 lines. | SHOULD |
+
+### The ViewModel — MUST
+
+- Exposes exactly one `uiState: StateFlow<<Name>UiState>`; the `MutableStateFlow` is private and written with `update { }`. Prefer `combine(...).stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), initial)` when state is derived from repository streams.
+- Actions are public methods named for what happens (`refresh()`, `delete()`), not a sealed event type.
+- Reads navigation arguments from `SavedStateHandle`; the Route receives no ids.
+- Rethrows `CancellationException`; puts every other failure in `uiState` as `UiText`.
+- **One-off outcomes are state.** A message is an item in `userMessages` that the UI acknowledges (`userMessageShown(id)`); "saved, now leave" is a flag (`isSaved`) that `<Name>Route` reacts to in a `LaunchedEffect` and then calls its navigation action. Mechanics: `../../references/architecture/mvvm-udf.md`.
+- **MUST NOT** send events to the UI through a `Channel` or `SharedFlow`. An indefinite snackbar collected from a channel blocks every effect queued behind it, and an effect consumed while the UI is stopped is lost.
+
+### `app/` — app-level state
 
 | File | Contains |
 |---|---|
-| `<Name>Screen.kt` | `<Name>Route` (resolves the ViewModel, collects state, collects effects) + `<Name>Screen` (stateless content: `state`, `onEvent`, `modifier`) |
-| `<Name>ViewModel.kt` | `class <Name>ViewModel(...) : MviViewModel<<Name>UiState, <Name>UiEvent, <Name>UiEffect>` — `handle(event)` is the only entry point |
-| `<Name>UiState.kt` | `data class <Name>UiState(...) : UiState` — one object, Compose-stable |
-| `<Name>UiEvent.kt` | `sealed interface <Name>UiEvent : UiEvent` |
-| `<Name>UiEffect.kt` | `sealed interface <Name>UiEffect : UiEffect` |
+| `App.kt` | theme, the single snackbar host, `CompositionLocalProvider`, `AppNavHost`. Reacts to `AppUiState` (signed out → auth graph; update downloaded → prompt) with `LaunchedEffect`s keyed on state. |
+| `AppViewModel.kt` | combines app-wide streams (session, entitlement, appearance, update status) from domain use cases. Startup sequencing belongs in a use case, not in `init`. |
+| `AppUiState.kt` | startup and session only: `isDataLoaded`, `initialRoute`, `isAuthenticated`, update status. **MUST NOT** carry per-screen data such as usage counters. |
+| `AppState.kt` | the app-wide, read-mostly value screens show (subscription tier) and its extension properties. |
 
-`presentation/app/` is the same five-file set for app-level state (`App.kt` hosts theme + navigation; `AppViewModel` owns session/entitlement/connectivity state and `AppUiEffect` carries app-level one-offs such as `NavigateToPaywall`).
+### App-wide state and CompositionLocals — MUST
 
-**`MviViewModel`** (`presentation/state/MviViewModel.kt` — an addition to the listed tree, provided by the scaffold) holds the pattern once:
-
-- `uiState: StateFlow<S>` exposed; `MutableStateFlow` private; `reduce { copy(...) }` is atomic (`update`).
-- `effects: Flow<F>` backed by a **`Channel(BUFFERED)`**: each effect is delivered **at most once**, buffered while no collector is active, and lost only on process death.
-- `handle(event: E)` dispatches; subclasses implement `onEvent`.
-- `CancellationException` rethrown in the provided `launch` helper.
-
-### The `Effect` trade-off — MUST be understood
-
-Google's guidance is **"do not send events from the ViewModel to the UI"** (*Strongly recommended*; `../../references/architecture/mvvm-udf.md`). This structure chooses `Effect` anyway, which is a legitimate, widespread MVI convention. The cost, and how this template contains it:
-
-| Risk | Mitigation in `MviViewModel` + `Route` |
+| State | Delivery |
 |---|---|
-| Effect emitted while the UI is stopped is **dropped** (`SharedFlow(replay=0)`) | `Channel(BUFFERED)` buffers until a collector resumes |
-| Effect **re-delivered** after rotation (`replay=1`) | `Channel` delivers each element once |
-| Effect lost on **process death** | accepted — effects are transient by definition. Anything that must survive (a pending navigation after a purchase, an unread error) **MUST be modelled in `UiState`** instead |
-| Collector tied to the wrong lifecycle | `Route` collects effects in `LaunchedEffect` keyed on the ViewModel, inside the composition, so collection stops with the screen |
-| Navigation as an effect | allowed for forward navigation; **back-stack-state decisions** (deep-link restore, auth redirect) go in `AppUiState` |
+| Theme, dimensions, language | CompositionLocal |
+| Small, immutable, read-mostly, needed across the tree (`AppState`: subscription tier) | `LocalAppState` **MAY** be used — read it in `<Name>Route` only and pass the value down as a parameter |
+| Anything a ViewModel decides on (limits, gating, what to load) | the domain use case injected into that ViewModel, mapped into its `UiState` |
+| Frequently changing or screen-specific data (usage numbers) | that screen's ViewModel → `UiState`; **MUST NOT** be a CompositionLocal |
+| The nav controller | **MUST NOT** be a CompositionLocal; navigation leaves a screen through `<Name>NavigationActions` |
 
-**Rule:** use `Effect` for snackbars, toasts, haptics, focus, one-shot navigation, system share sheets. Use `UiState` for anything the user could miss and need to see again.
+Both delivery paths **MUST** start from the same domain use case, so they cannot disagree. While an app-wide value is still loading, **MUST NOT** treat it as its negative ("not premium"): hide upsell UI and skip gating until it resolves.
+
+### `navigation/` — one owner per back stack
+
+| File | Contains |
+|---|---|
+| `AppRoute.kt` | `@Serializable sealed interface AppRoute` — full-screen destinations and nested-graph keys. Arguments are ids only; **MUST NOT** carry PII or whole models. |
+| `MainTab.kt` | `@Serializable sealed interface MainTab` — bottom-navigation destinations. A separate type, so a tab cannot be sent to the app back stack. |
+| `AppNavHost.kt` | the single app-level host; calls the graph builders. |
+| `<Area>Graph.kt` | `NavGraphBuilder.<area>Graph(navController)` — a real nested graph. Builds each screen's `<Name>NavigationActions`; **every transition is readable here**. |
+| `NavExtensions.kt` | stack-clearing helpers (`navigateToMain()`, `navigateMainTab()`). |
+
+- The navigation library is the project's own (Navigation 3 `NavDisplay` or Navigation 2 `NavHost`); this structure does not choose it — `../../references/android/navigation.md`.
+- Each host is declared **once**. A shell that switches between bottom bar and rail by layout mode takes the host as a content slot.
+- The selected tab is derived with `destination.hasRoute<T>()`, never by comparing against `T::class.qualifiedName` — that breaks under R8.
+- Tabs are an `enum` (`MainTabItem(tab, label, icon)`) iterated by the bar; no index literals.
 
 ### Other presentation packages
 
 | Package | Contains | Rules |
 |---|---|---|
-| `component/<kind>` | reusable stateless composables (`button`, `dialog`, `language`, `audio`, `animation`, `loading`, `error`, `toolbar`, `bottomsheet`, `common`) — values + lambdas, `modifier` param | ViewModel parameters; feature-specific logic |
-| `navigation/` | `AppRoute.kt` (sealed, `@Serializable` keys), `AppNavigation.kt` (Navigation 3 `NavDisplay` + entry decorators, one owner of the back stack), `NavigationEffect.kt` (navigation intents from screens → app) | navigation calls from inside feature screens |
-| `state/` | `UiState`, `UiEvent`, `UiEffect`, `MviViewModel` | screen-specific types |
-| `theme/` | `Theme.kt`, `Color.kt`, `Typography.kt`, `Shape.kt`, `Dimension.kt` | hardcoded colours/dimensions in screens |
+| `component/` | reusable stateless composables — values + lambdas, `modifier` param | ViewModel parameters; feature-specific logic |
+| `permission/` | permission controllers, `PermissionStatus` | requesting on screen entry — ask in context, from a user action |
+| `theme/` | `AppTheme.kt`, `Color.kt`, `Type.kt`, `Dimens.kt` | hardcoded colours, sizes, or font attributes in screens |
+| `util/` | `UiText` (+ `asString()`), `CompositionLocals.kt`, layout-mode helpers | screen-specific types |
+| `di/` | `PresentationModule.kt` — one `viewModelOf(::<Name>ViewModel)` per screen | bindings for `data` or `core` |
 
 ---
 
@@ -166,8 +253,12 @@ Google's guidance is **"do not send events from the ViewModel to the UI"** (*Str
 | DTO | `<Thing>Request` / `<Thing>Response` / `<Thing>Dto` | `TranslateRequest`, `TranslateResponse` |
 | Entity / DAO | `<Thing>Entity` / `<Thing>Dao` | `HistoryEntity` / `HistoryDao` |
 | Mapper | `fun <From>.to<To>()` in `<Feature>Mapper.kt` | `fun TranslateResponse.toDomain()` |
-| Screen set | `<Name>Screen`, `<Name>ViewModel`, `<Name>UiState`, `<Name>UiEvent`, `<Name>UiEffect` | `TranslationScreen` … |
-| Route / content | `<Name>Route` / `<Name>Screen` | — |
+| Screen set (files) | `<Name>Screen.kt`, `<Name>ViewModel.kt`, `<Name>UiState.kt` | `HomeScreen.kt` … |
+| Route / content | `<Name>Route` / `<Name>Screen` | `HomeRoute` / `HomeScreen` |
+| Screen callbacks | `<Name>NavigationActions` / `<Name>Actions` | `HomeNavigationActions` / `HomeActions` |
+| ViewModel action | verb, no `on` prefix | `refresh()`, `userMessageShown(id)` |
+| Callback property | `on<Thing><Verb>` | `onMemoryClick`, `onOpenPaywall` |
+| Routes | `AppRoute.<Name>`, `MainTab.<Name>`, `<Area>Graph` | `AppRoute.MemoryDetail` |
 | Analytics event | `AnalyticsEvent.<Verb><Noun>` | `AnalyticsEvent.TranslationCompleted` |
 | DI module vals | `coreModule`, `networkModule`, `platformModule()`, `dataModule`, `repositoryModule`, `sourceModule`, `presentationModule` | — |
 
@@ -189,19 +280,18 @@ Google's guidance is **"do not send events from the ViewModel to the UI"** (*Str
 **Deviations this structure makes from the reference defaults** (record them in reports as "codebase convention"):
 
 1. Package-by-layer in one module instead of Gradle modules → visibility is by `internal` within the module and by lint rule across layers, not by module boundary.
-2. `UiEvent`/`UiEffect` MVI instead of method calls + state-held messages → see the trade-off table above.
-3. A use case per feature package is expected; still **do not** add pass-through use cases.
+2. A use case per feature package is expected; still **do not** add pass-through use cases.
 
 ---
 
 ## Scaffolding
 
-`scaffold.sh` (same directory) creates the tree and generates the MVI base types and screen sets:
+`scaffold.sh` (same directory) creates the tree and generates the navigation key types and screen sets:
 
 ```bash
-# create the package tree + presentation/state base types
+# create the package tree + navigation key types (AppRoute, MainTab)
 templates/structure/scaffold.sh init  --root src/commonMain/kotlin --package com.live.voice.translator.instant.speakandtranslate
-# add a screen set (5 files) + domain/data feature packages
+# add a screen set (3 files) + domain/data feature packages
 templates/structure/scaffold.sh screen Translation --root src/commonMain/kotlin --package com.live.voice.translator.instant.speakandtranslate
 templates/structure/scaffold.sh feature translation --root src/commonMain/kotlin --package com.live.voice.translator.instant.speakandtranslate
 ```
@@ -210,4 +300,4 @@ For an Android-only project use `--root app/src/main/java` (or `kotlin`).
 
 ## Verification
 
-The generated `presentation/state/*`, `presentation/navigation/*` files and one scaffolded screen set (`Sample`) were generated into a copy of `../../examples/user-profile/` (`scaffold.sh init` + `screen Sample` + `feature translation`) and compiled with `compileKotlinJvm compileKotlinIosSimulatorArm64` on 2026-10-03 (Kotlin 2.4.20, Compose Multiplatform 1.12.1, Koin 4.2.2, lifecycle 2.11.0). Compiled, not tested: the scaffold emits placeholders for intent handling. Everything else in this file is a placement rule, not code.
+`scaffold.sh init` + `screen Sample` + `feature translation` were run into a copy of `../../examples/user-profile/`, and the generated files — `presentation/navigation/AppRoute.kt`, `MainTab.kt`, and the three-file `Sample` screen set (`SampleNavigationActions`, `SampleActions`, `SampleRoute`, `SampleScreen`, `SampleViewModel`, `SampleUiState`) — compiled with `compileKotlinJvm compileKotlinIosSimulatorArm64 compileAndroidMain` on 2026-10-04 with no warnings (Kotlin 2.4.20, Compose Multiplatform 1.12.1, Koin 4.2.2, lifecycle 2.11.0). Compiled, not tested: the scaffold emits a placeholder `refresh()`. The `Home*` snippets and the `app/`, `navigation/` file descriptions in this document are **not** compiled; they are placement rules and shapes.

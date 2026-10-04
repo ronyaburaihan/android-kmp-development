@@ -16,7 +16,7 @@ Fill-in skeletons. Each is the shape the matching workflow expects; none contain
 | `kmp-module.build.gradle.kts` | new shared module | declaring targets and source sets |
 | `platform-module.kt` | `references/libraries/koin-di.md` | the `expect fun platformModule()` pattern |
 | `ui-state-and-viewmodel.kt` | `references/architecture/mvvm-udf.md` | a new screen's state + ViewModel |
-| `structure/PROJECT_STRUCTURE.md` + `structure/scaffold.sh` | `SKILL.md` § Project structure convention | the house package-by-layer / MVI layout: placement rules, naming, the `Effect` trade-off; the script creates the tree, MVI base types, and screen sets |
+| `structure/PROJECT_STRUCTURE.md` + `structure/scaffold.sh` | `SKILL.md` § Project structure convention | the house package-by-layer / MVVM-UDF layout: placement rules, naming, the screen set (`Route`/`Screen`/`ViewModel`/`UiState`); the script creates the tree, navigation key types, and screen sets |
 | `ci-github-actions.yml` | `references/quality/ci-pipeline.md` | setting up CI; valid YAML, not executed on a hosted runner |
 
 Rules for using a template: copy, fill every `<placeholder>`, delete sections that do not apply **and say so** in the report, never leave a placeholder in a delivered file. Versions in `libs.versions.toml` are examples verified on 2026-10-03 — re-verify against `../references/version-matrix.md`.
