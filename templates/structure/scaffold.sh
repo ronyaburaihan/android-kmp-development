@@ -41,11 +41,11 @@ package $PKG.presentation.state
 /** Immutable snapshot of one screen. Implementations are data classes with val properties only. */
 public interface UiState
 K
-  write presentation/state/UiIntent.kt <<K
+  write presentation/state/UiEvent.kt <<K
 package $PKG.presentation.state
 
-/** A user or system intention handled by a ViewModel. One sealed hierarchy per screen. */
-public interface UiIntent
+/** A user or system event handled by a ViewModel. One sealed hierarchy per screen. */
+public interface UiEvent
 K
   write presentation/state/UiEffect.kt <<K
 package $PKG.presentation.state
@@ -75,32 +75,32 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 /**
- * The MVI container. One immutable [uiState], intents in through [handle], effects out through
+ * The MVI container. One immutable [uiState], events in through [handle], effects out through
  * [effects] — a buffered channel, so an effect emitted while the UI is stopped is held until a
  * collector resumes and delivered exactly once. Lost only on process death; durable outcomes
  * belong in state.
  */
-public abstract class MviViewModel<S : UiState, I : UiIntent, E : UiEffect>(
+public abstract class MviViewModel<S : UiState, E : UiEvent, F : UiEffect>(
     initialState: S,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(initialState)
     public val uiState: StateFlow<S> = _uiState.asStateFlow()
 
-    private val _effects = Channel<E>(Channel.BUFFERED)
-    public val effects: Flow<E> = _effects.receiveAsFlow()
+    private val _effects = Channel<F>(Channel.BUFFERED)
+    public val effects: Flow<F> = _effects.receiveAsFlow()
 
     /** The only entry point from the UI. */
-    public fun handle(intent: I) { onIntent(intent) }
+    public fun handle(event: E) { onEvent(event) }
 
-    protected abstract fun onIntent(intent: I)
+    protected abstract fun onEvent(event: E)
 
     protected val currentState: S get() = _uiState.value
 
     /** Atomic state transition. */
     protected fun reduce(transform: S.() -> S) { _uiState.update(transform) }
 
-    protected fun emitEffect(effect: E) { _effects.trySend(effect) }
+    protected fun emitEffect(effect: F) { _effects.trySend(effect) }
 
     /** Launch in [viewModelScope] with the cancellation contract enforced. */
     protected fun launch(block: suspend CoroutineScope.() -> Unit): Job = viewModelScope.launch {
@@ -145,22 +145,22 @@ public data class ${N}UiState(
     val isLoading: Boolean = false,
 ) : UiState
 K
-  write "$P/${N}Intent.kt" <<K
+  write "$P/${N}UiEvent.kt" <<K
 package $PKG.presentation.screen.$lc
 
-import $PKG.presentation.state.UiIntent
+import $PKG.presentation.state.UiEvent
 
-public sealed interface ${N}Intent : UiIntent {
-    public data object Load : ${N}Intent
+public sealed interface ${N}UiEvent : UiEvent {
+    public data object Load : ${N}UiEvent
 }
 K
-  write "$P/${N}Effect.kt" <<K
+  write "$P/${N}UiEffect.kt" <<K
 package $PKG.presentation.screen.$lc
 
 import $PKG.presentation.state.UiEffect
 
-public sealed interface ${N}Effect : UiEffect {
-    public data class ShowMessage(val text: String) : ${N}Effect
+public sealed interface ${N}UiEffect : UiEffect {
+    public data class ShowMessage(val text: String) : ${N}UiEffect
 }
 K
   write "$P/${N}ViewModel.kt" <<K
@@ -168,11 +168,11 @@ package $PKG.presentation.screen.$lc
 
 import $PKG.presentation.state.MviViewModel
 
-public class ${N}ViewModel : MviViewModel<${N}UiState, ${N}Intent, ${N}Effect>(${N}UiState()) {
+public class ${N}ViewModel : MviViewModel<${N}UiState, ${N}UiEvent, ${N}UiEffect>(${N}UiState()) {
 
-    override fun onIntent(intent: ${N}Intent) {
-        when (intent) {
-            ${N}Intent.Load -> load()
+    override fun onEvent(event: ${N}UiEvent) {
+        when (event) {
+            ${N}UiEvent.Load -> load()
         }
     }
 
@@ -203,21 +203,21 @@ import org.koin.compose.viewmodel.koinViewModel
 @Composable
 public fun ${N}Route(
     viewModel: ${N}ViewModel = koinViewModel(),
-    onEffect: (${N}Effect) -> Unit = {},
+    onEffect: (${N}UiEffect) -> Unit = {},
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     LaunchedEffect(viewModel) {
         viewModel.effects.collect(onEffect)      // stops with the composition
     }
-    LaunchedEffect(viewModel) { viewModel.handle(${N}Intent.Load) }
-    ${N}Screen(state = state, onIntent = viewModel::handle)
+    LaunchedEffect(viewModel) { viewModel.handle(${N}UiEvent.Load) }
+    ${N}Screen(state = state, onEvent = viewModel::handle)
 }
 
 /** Content: values and lambdas only. Previewable and testable without DI. */
 @Composable
 public fun ${N}Screen(
     state: ${N}UiState,
-    onIntent: (${N}Intent) -> Unit,
+    onEvent: (${N}UiEvent) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     Box(modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
