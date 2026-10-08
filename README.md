@@ -114,13 +114,15 @@ the declared trigger. The dedicated adapters exist only where an agent's own for
 ### How it works, and why it isn't just a paste
 
 The skill is ~24,000 lines. Most agents load their instruction file fully into context every
-session, and Codex caps combined instructions at **32 KiB**. So each agent gets an **~8 KB
+session, and Codex caps combined instructions at **32 KiB**. So each agent gets a **~10 KB
 bootstrap** carrying the non-negotiable rules, the rule-level legend, the stop conditions and a
 **routing table** naming the file to open per task; the agent reads the rest on demand. That
 reproduces Claude Code's progressive disclosure for agents with no skill system.
 
-Every adapter is generated from one source (`install/AGENTS.md`), and an existing instruction file
-is backed up and appended to rather than overwritten. Full detail, manual install and verification
+Every adapter is rendered at install time from one source (`install/AGENTS.md`). Project scope
+writes project-relative paths, so the result can be committed. In an existing `AGENTS.md` the
+bootstrap sits between markers: appended on first install, and only that block is replaced on
+re-runs. Full detail, manual install and verification
 steps: **[`install/README.md`](install/README.md)**.
 
 ### Claude Code without the script

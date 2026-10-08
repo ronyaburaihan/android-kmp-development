@@ -92,7 +92,7 @@ rule is the whole of progressive disclosure.
 | Document | Load | Rule |
 |---|---|---|
 | `SKILL.md` | always | Routing table and non-negotiable rules only. Anything a task-specific branch needs goes behind a pointer. |
-| `install/AGENTS.md` and its adapters | always, for agents with no skill system | ~7 KB ceiling. Codex caps combined instructions at 32 KiB; most agents load the file in full. |
+| `install/AGENTS.md` (the adapters are rendered from it by `install.sh`; there are no copies to edit) | always, for agents with no skill system | ~10 KB ceiling. Codex caps combined instructions at 32 KiB; most agents load the file in full. |
 | `references/*` | on demand | One topic per file. Correct code, incorrect code with the reason, Android/iOS differences, official links, verification date. |
 | `workflows/*` | on demand | The ten mandatory sections. Procedure, decision points, report. |
 | `process/*` | on demand | Purpose · When to invoke · The mechanic · Android/KMP specifics · Anti-patterns · It's working if · Where it fits. |
