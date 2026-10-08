@@ -10,7 +10,9 @@ Establish what the project **actually is** — module graph, versions, libraries
 
 Produces a **Project Profile** that later steps cite. Produces **no code changes**.
 
-**MUST** run this before the first file creation or modification in any task. **MAY** be skipped only if a Project Profile from the same session is already in context and no build files have changed since.
+**MUST** run this before the first file creation or modification in a **standard** task. **MAY** be skipped if a Project Profile from the same session is already in context and no build files have changed since.
+
+A **small** task (the entry point's *Task size* table: one or two existing files, no build file, no new file, dependency, public API or persisted data) runs the short form instead: read the file being changed and one comparable file, run `git status --porcelain`, and check `../references/deprecations.md` for the API being touched. No Project Profile. If the short form shows the task is not small after all, run the full inspection.
 
 ---
 
@@ -54,7 +56,7 @@ cat gradle/wrapper/gradle-wrapper.properties
 Record the Project Profile version block. **MUST** check the lockstep rules in `../references/version-matrix.md`:
 
 - Compose Compiler plugin version **==** Kotlin version
-- KSP version matched to Kotlin
+- KSP release supports the project's Kotlin version (KSP 2.x has its own version line — check its release notes, not the prefix)
 - CMP version compatible with Kotlin
 
 **MUST** report a lockstep violation immediately as a finding — it is a latent build failure.
@@ -76,7 +78,7 @@ If KMP, record the declared targets verbatim and check them against the tier tab
 ### 4.4 Libraries actually in use
 
 ```bash
-grep -rhoE 'implementation\(libs\.[a-zA-Z0-9.]+\)' --include='build.gradle.kts' . | grep -v build/ | sort -u
+grep -rhoE '\b[a-zA-Z]*([iI]mplementation|[aA]pi|ksp[A-Za-z]*|kapt)\((libs\.[a-zA-Z0-9.]+|"[^"]+")\)' --include='build.gradle*' . | grep -v '/build/' | sort -u
 ```
 
 Fill in the Project Profile library block. For each slot, record the **actual** choice, not the expected one:
@@ -93,7 +95,7 @@ Fill in the Project Profile library block. For each slot, record the **actual** 
 | Image loading | Coil, Glide, Landscapist, Kamel |
 | Test | kotlin-test, JUnit4, JUnit5, Turbine, MockK, Mockito, Robolectric |
 
-**MUST** record `EncryptedSharedPreferences`, Navigation 2, or `androidx.room3` presence as findings — see `../references/deprecations.md`.
+**MUST** record `EncryptedSharedPreferences` or Navigation 2 as findings — see `../references/deprecations.md`. Record which Room line is in use (`androidx.room` or `androidx.room3`): both are stable and neither is a finding, but a module mixing the two is (`../references/libraries/room-datastore.md`).
 
 ### 4.4b Declared structure convention
 
@@ -109,7 +111,7 @@ Read **two or three** existing comparable implementations, not one. One file is 
 
 ```bash
 # find the nearest comparable feature to the task at hand
-find . -path '*/presentation/*' -o -path '*/ui/*' -name '*ViewModel.kt' -not -path '*/build/*' | head -20
+find . -name '*ViewModel.kt' \( -path '*/presentation/*' -o -path '*/ui/*' \) -not -path '*/build/*' | head -20
 find . -name '*Repository*.kt' -not -path '*/build/*' | head -20
 ```
 
@@ -150,9 +152,9 @@ Read one existing test near the task area. New tests match its style.
 ```bash
 grep -rn 'minSdk\|targetSdk\|compileSdk' --include='build.gradle.kts' . | grep -v build/
 grep -rn 'isMinifyEnabled\|isShrinkResources\|optimization\s*{' --include='build.gradle.kts' . | grep -v build/
-find . -name 'proguard*.pro' -o -name '*.keep' -not -path '*/build/*'
-find . -name 'baseline-prof.txt' -o -name 'startup-prof.txt' -not -path '*/build/*'
-ls app/src/*/AndroidManifest.xml 2>/dev/null
+find . \( -name 'proguard*.pro' -o -name '*.keep' \) -not -path '*/build/*'
+find . \( -name 'baseline-prof.txt' -o -name 'startup-prof.txt' \) -not -path '*/build/*'
+find . -name AndroidManifest.xml -path '*/src/*' -not -path '*/build/*'
 ```
 
 Record: SDK levels, whether R8 is on for release, whether Baseline Profiles exist, whether a benchmark variant exists.
@@ -166,7 +168,7 @@ git status --porcelain
 git log --oneline -10
 ```
 
-**MUST** record whether the working tree was already dirty. **MUST NOT** mix pre-existing uncommitted changes into the task's diff.
+**MUST** record whether the working tree was already dirty, and which files. **MUST NOT** mix pre-existing uncommitted changes into the task's diff.
 
 **SHOULD** confirm the project builds before changing it, with the cheapest available check:
 
@@ -182,7 +184,7 @@ git log --oneline -10
 | # | Trigger | Options | Action |
 |---|---|---|---|
 | D1 | **Build already broken** before any change | (a) fix the break first as a separate task; (b) proceed read-only; (c) abort | **MUST** stop. Report the failure verbatim. **MUST NOT** begin the original task on a broken build. |
-| D2 | **Working tree already dirty** | (a) user stashes/commits first; (b) proceed and scope the report to your own files | **MUST** stop and ask. Report which files were already modified. |
+| D2 | **Working tree already dirty** | (a) user stashes/commits first; (b) proceed and scope the report to your own files | Uncommitted changes in a file the task must modify: **MUST** stop and ask. Dirty only in files the task will not touch: proceed with (b) and list them in the report. |
 | D3 | **Version lockstep violated** (e.g. Compose compiler plugin ≠ Kotlin) | (a) fix as a prerequisite; (b) proceed and accept possible build failure | **MUST** stop and ask. A lockstep violation will surface as an unrelated-looking error later. |
 | D4 | **No version catalog** and the task requires a dependency change | (a) add a catalog (a structural change — needs approval); (b) edit module files in place, matching existing style | **MUST** ask. Default recommendation: (b), to keep the diff minimal. |
 | D5 | **Two conflicting architectural patterns** in the task area | (a) match the nearest comparable code; (b) match the newer pattern; (c) ask | **SHOULD** choose (a) and report. **MUST** ask if "nearest" is ambiguous. |
@@ -221,7 +223,7 @@ This workflow produces no implementation. The rules it establishes for downstrea
 
 | Failure | Response |
 |---|---|
-| Not a Gradle project / no build files | **MUST** stop. Report what the directory contains. Do not scaffold a project. |
+| Not a Gradle project / no build files | If the task is to **create** a project, there is nothing to inspect: record that, skip to the task, and take every default from the references (and `../templates/structure/` if the user wants the house structure). Otherwise **MUST** stop and report what the directory contains; do not scaffold a project nobody asked for. |
 | Gradle configuration fails | **MUST** capture the error verbatim and stop at D1. Do not attempt a fix as part of inspection. |
 | Gradle daemon unavailable / offline / cannot resolve dependencies | **MUST** continue with file-reading only. Mark build health `NOT RUN — <reason>`. **MUST NOT** claim the project builds. |
 | A module's build file is unreadable or generated | Record it as `unknown` and proceed. Note it in Observations. |

@@ -1,19 +1,19 @@
 ---
 name: android-kmp-development
-description: Production-grade Android and Kotlin Multiplatform engineering. Use when developing, debugging, reviewing, testing, refactoring, upgrading, or releasing Kotlin, Android, Jetpack Compose, Compose Multiplatform, or KMP applications — including Koin, Ktor, Room, DataStore, coroutines/Flow, iOS interop, and Play/App Store release work.
+description: Android and Kotlin Multiplatform app engineering. Use when developing, debugging, reviewing, testing, refactoring, upgrading, or releasing an Android, Jetpack Compose, Compose Multiplatform, or KMP mobile app — including Koin, Ktor client, Room, DataStore, coroutines/Flow, iOS interop, and Play/App Store release work. Not for server-side Kotlin (Ktor server, Spring) or Kotlin that targets no Android or KMP app.
 ---
 
 # Android & Kotlin Multiplatform Development
 
 ## Role
 
-Act as a senior Android and Kotlin Multiplatform engineer working on an **existing production codebase**.
+Act as a senior Android and Kotlin Multiplatform engineer. The default assumption is an **existing production codebase**; when the task is to create a new project there is no codebase to match, so the reference defaults apply directly.
 
 Priority order when these conflict: **correctness → security → preserving existing behaviour → maintainability → performance → elegance.**
 
 ## Core principles
 
-1. **Inspect before implementing.** Never create or modify a file before reading the comparable existing implementation.
+1. **Inspect before implementing.** Never create or modify a file before reading the comparable existing implementation. How much inspection: *Task size* below.
 2. **The codebase outranks these documents.** They describe defaults for new code. A production codebase that is internally consistent wins — match it and say so.
 3. **Minimal, focused changes.** The requested scope is the deliverable. Unrelated findings go in the report, not the diff.
 4. **Preserve existing behaviour.** A behaviour change that was not requested is a defect.
@@ -41,11 +41,22 @@ Full contract: `references/README.md`. Standing workflow contract: `workflows/RE
 
 ---
 
-## Start here, every task
+## Task size
+
+Size the task first. The process below scales with it; the principles above do not.
+
+| Size | It is small only if **all** hold | Inspection | Before coding | Report |
+|---|---|---|---|---|
+| **Small** | one or two existing files change; no build file; no new file, dependency, or public/Swift-facing API; no schema, migration, or persisted data | Short form: the file, one comparable file, `git status` | Just do it | Outcome, Changes made, Validation performed — plus Not done / Observations / Decisions needed when they have content |
+| **Standard** | anything else | Full `workflows/inspect-project.md` → Project Profile | Present the file list and wait | Full base format |
+
+When unsure, it is standard. A small task that grows mid-way becomes standard at that point: stop and run the full inspection.
+
+## Start here
 
 | Order | Read | When |
 |---|---|---|
-| 1 | `workflows/inspect-project.md` | **Always**, before the first file is created or modified. Produces a cited Project Profile. |
+| 1 | `workflows/inspect-project.md` | Standard tasks: before the first file is created or modified. Produces a cited Project Profile. Small tasks: its short form only. |
 | 2 | `references/version-matrix.md` | Before touching **any** build file. Contains the hard Kotlin ↔ Compose-compiler ↔ KSP ↔ CMP lockstep rules. |
 | 3 | `references/deprecations.md` | Before writing or reviewing code. Short; catches most real-world defects. |
 
@@ -84,6 +95,8 @@ rationale for each decision.
 | `examples/CATALOG.md` | One entry per example (repository, use case, ViewModel, presenter, StateFlow, SharedFlow, Koin, Ktor, tokens, DataStore, Room, expect/actual, platform interfaces, unit + coroutine tests): where it is, what it avoids, how it is tested. |
 | `examples/user-profile/` | ✅ Compiles for **Android, JVM, iOS**; 91 test executions on JVM + iOS simulator incl. Compose UI tests and a seeded Room migration; Swift smoke compiles against the exported framework (verified 2026-10-03; exact record in `examples/README.md`). Covers repository, use case, ViewModel, presenter, StateFlow, SharedFlow, Koin, Ktor + auth, DataStore, Room 3, Compose UI, `expect`/`actual`, platform interfaces, Swift facade, unit/coroutine/UI/migration tests. |
 | `examples/ui-layer.md` | ⚠ Extra Compose fragments; each section marked COMPILED / NOT COMPILED. |
+
+The example shows layer **behaviour**. Its package layout is not the house structure in `templates/structure/PROJECT_STRUCTURE.md` — in a repository that declares that structure, take placement and naming from it and behaviour from the example.
 
 **MUST NOT** present an example as verified beyond what `examples/README.md` records.
 
@@ -139,6 +152,7 @@ rationale for each decision.
 | Module structure, convention plugins | `references/architecture/modularization.md` |
 | Where a new file goes in the house package-by-layer / MVVM-UDF structure | `templates/structure/PROJECT_STRUCTURE.md` (+ `templates/structure/scaffold.sh`) |
 | Writing a commit message | `templates/commit-message.md` |
+| A spec, plan, ADR, bug report, PR description, release checklist, or task report to fill in | `templates/README.md` → the one template |
 | Layer rules, repository boundary | `references/android/app-architecture.md` |
 | Kotlin style, naming, API surface | `references/kotlin/coding-conventions.md` |
 | A worked end-to-end slice to pattern-match against | `examples/CATALOG.md` → the file, then `examples/DECISIONS.md` for the why |
@@ -156,7 +170,7 @@ Full index with one-line topic summaries: `references/README.md`, `workflows/REA
 
 ## Project structure convention
 
-If the repository contains a `PROJECT_STRUCTURE.md` (the house convention: package-by-layer `core` → `domain` → `data` → `presentation`, MVVM/UDF screen sets of `Screen`/`ViewModel`/`UiState`, with `Route` + `NavigationActions`/`Actions`), **file placement MUST follow it** and it overrides the module-based defaults in `references/architecture/modularization.md`. The template, placement rules, naming, and the app-state/CompositionLocal rules are in `templates/structure/PROJECT_STRUCTURE.md`; `templates/structure/scaffold.sh` generates the tree, the navigation key types, and screen sets. Layer *behaviour* rules (repository boundary, cancellation, errors) still come from the references.
+If the repository contains a `PROJECT_STRUCTURE.md` (the house convention: package-by-layer `core` → `domain` → `data` → `presentation`, MVVM/UDF screen sets of `Screen`/`ViewModel`/`UiState`, with `Route` + `NavigationActions`/`Actions`), **file placement MUST follow it** and it overrides the module-based defaults in `references/architecture/modularization.md`. Without that file the convention does not apply; do not introduce it unasked. The template, placement rules, naming, and the app-state/CompositionLocal rules are in `templates/structure/PROJECT_STRUCTURE.md`; `templates/structure/scaffold.sh` generates the tree, the navigation key types, and screen sets. Layer *behaviour* rules (repository boundary, cancellation, errors) still come from the references.
 
 ## Architecture
 
@@ -180,9 +194,9 @@ Defaults for new code, where the project has not already decided:
 
 **Before coding:**
 
-1. Complete the inspection. Name the existing file whose pattern you will copy.
+1. Complete the inspection for the task's size. Name the existing file whose pattern you will copy.
 2. Confirm acceptance criteria. Ask once, listing the specific gaps — do not fill a partial spec by invention.
-3. Present the file list you intend to create or modify, and wait. This is where scope creep is caught.
+3. Standard tasks: present the file list you intend to create or modify, and wait. This is where scope creep is caught. In a headless run, record the list in the report and proceed.
 4. Name the likely regressions.
 
 **While coding:**
@@ -225,21 +239,23 @@ Stop, state the situation, and wait when:
 - a workflow decision point is reached
 - the task requires restructuring modules, swapping a library, changing Kotlin/AGP/Compose/`targetSdk` versions, or reshaping a public or Swift-facing API
 - the build or tests were **already failing** before you started
-- the working tree was already dirty
+- the working tree has uncommitted changes in a file the task must modify
 - the task's premise appears wrong — the described bug does not reproduce, or the described code does not exist
 - the change would touch a signing key, store credential, production config file, secret, or persisted user data
 - two rules conflict for this codebase
-- a fact you need is tagged `[UNVERIFIED]`
+- the task depends on a fact tagged `[UNVERIFIED]` and you could not verify it at the source the tag names
 
-Do not guess past a stop condition to maintain momentum.
+Do not guess past a stop condition to maintain momentum. When nobody can answer (a headless or scheduled run), finish every part that is not blocked and end with Outcome `NEEDS DECISION`, each open question listed with options and a recommendation.
+
+This list is the single copy. `workflows/README.md` and `install/AGENTS.md` point here or mirror it word for word.
 
 ---
 
 ## Reporting
 
-Every task ends with the base report format in `workflows/README.md`: **Outcome → Inspection findings → Changes made → Conventions followed → Validation performed → Not done → Observations → Decisions needed.**
+A standard task ends with the base report format in `workflows/README.md`: **Outcome → Inspection findings → Changes made → Conventions followed → Validation performed → Not done → Observations → Decisions needed.** A small task ends with the short report in *Task size*.
 
-Two sections are mandatory even when empty:
+In the full format two sections are mandatory even when empty:
 
 - **Not done** — in scope but not delivered, and why.
 - **Observations** — problems found but deliberately left out of the diff.

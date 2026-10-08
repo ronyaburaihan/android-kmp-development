@@ -4,12 +4,13 @@ This project uses the **android-kmp-development** skill: 35 reference documents,
 8 process primitives and a compiled example at `SKILL_PATH`. Everything below is the always-loaded summary — **read the files
 named in the routing table on demand.** Do not try to hold the whole set in context.
 
-Entry point: `SKILL_PATH/SKILL.md`.
+Entry point: `SKILL_PATH/SKILL.md`. Every other path in this file is relative to `SKILL_PATH`.
 
 ## Non-negotiable rules
 
-1. **Inspect before implementing.** Read `SKILL_PATH/workflows/inspect-project.md` and follow it
-   before creating or modifying any file. Cite patterns to at least two real files.
+1. **Inspect before implementing.** For a standard task, read
+   `SKILL_PATH/workflows/inspect-project.md` and follow it before creating or modifying any file;
+   cite patterns to at least two real files. For a small task, its short form (*Task size*).
 2. **The codebase outranks these documents.** They describe defaults for new code. A consistent
    production codebase wins — match it, and say in your report that you did.
 3. **Minimal, focused changes.** The requested scope is the deliverable. Unrelated findings go in
@@ -37,11 +38,20 @@ Entry point: `SKILL_PATH/SKILL.md`.
 Provenance tags on every claim: **[OFFICIAL]** first-party docs · **[DEFAULT]** engineering
 convention, present as a choice · **[UNVERIFIED]** must be verified before use, never stated as fact.
 
-## Start here, every task
+## Task size
+
+| Size | It is small only if **all** hold | Inspection | Before coding | Report |
+|---|---|---|---|---|
+| **Small** | one or two existing files change; no build file; no new file, dependency, or public/Swift-facing API; no schema, migration, or persisted data | the file, one comparable file, `git status` | just do it | short |
+| **Standard** | anything else | full `workflows/inspect-project.md` | present the file list and wait (headless: record it and proceed) | full |
+
+When unsure, it is standard. A small task that grows becomes standard at that point.
+
+## Start here
 
 | Order | Read | When |
 |---|---|---|
-| 1 | `workflows/inspect-project.md` | always, before the first file change |
+| 1 | `workflows/inspect-project.md` | standard tasks: before the first file change. Small tasks: short form only |
 | 2 | `references/version-matrix.md` | before touching any build file — holds the hard Kotlin ↔ Compose-compiler ↔ KSP ↔ CMP lockstep |
 | 3 | `references/deprecations.md` | before writing or reviewing code; short, catches most real defects |
 
@@ -96,6 +106,7 @@ convention, present as a choice · **[UNVERIFIED]** must be verified before use,
 | A worked, compiled example | `examples/CATALOG.md`, then `examples/DECISIONS.md` |
 | Where a new file goes (house structure) | `templates/structure/PROJECT_STRUCTURE.md` |
 | Commit message | `templates/commit-message.md` |
+| A spec, plan, ADR, bug report, PR description or release checklist to fill in | `templates/README.md` → the one template |
 
 **Do not** load Firebase, billing, AdMob, release or iOS-interop documents for a task that does not
 touch them.
@@ -112,16 +123,23 @@ Generic Android advice misleads on KMP here specifically:
 
 ## Stop and ask
 
-Stop, state the situation, and wait when: a workflow decision point is reached; the task needs one
-of the forbidden actions in rule 5; the build or tests were already failing; the working tree was
-already dirty; the task's premise appears wrong; the change would touch a signing key, store
-credential, secret or persisted user data; or a fact you need is tagged `[UNVERIFIED]`.
+Stop, state the situation, and wait when:
 
-Do not guess past a stop condition to maintain momentum.
+- a workflow decision point is reached
+- the task requires restructuring modules, swapping a library, changing Kotlin/AGP/Compose/`targetSdk` versions, or reshaping a public or Swift-facing API
+- the build or tests were **already failing** before you started
+- the working tree has uncommitted changes in a file the task must modify
+- the task's premise appears wrong — the described bug does not reproduce, or the described code does not exist
+- the change would touch a signing key, store credential, production config file, secret, or persisted user data
+- two rules conflict for this codebase
+- the task depends on a fact tagged `[UNVERIFIED]` and you could not verify it at the source the tag names
+
+Do not guess past a stop condition to maintain momentum. When nobody can answer (a headless or scheduled run), finish every part that is not blocked and end with Outcome `NEEDS DECISION`, each open question listed with options and a recommendation.
 
 ## Reporting
 
-End every task with: **Outcome · Inspection findings · Changes made · Conventions followed ·
-Validation performed · Not done · Observations · Decisions needed.** The last two are mandatory
-even when empty — an omitted caveat reads as no caveat. Format:
-`SKILL_PATH/templates/task-report.md`.
+End a standard task with: **Outcome · Inspection findings · Changes made · Conventions followed ·
+Validation performed · Not done · Observations · Decisions needed.** Not done and Observations are
+mandatory even when empty — an omitted caveat reads as no caveat. Format:
+`SKILL_PATH/templates/task-report.md`. End a small task with Outcome, Changes made and Validation
+performed, adding the other sections only when they have content.
