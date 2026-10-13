@@ -110,7 +110,7 @@ dependencies {
 
 **MUST** commit the contents of `schemas/`. The exported schema is the input to migration tests; without it a migration cannot be verified.
 
-**MUST** keep the KSP version matched to the Kotlin version. See `../version-matrix.md`.
+**MUST** use a KSP release whose release notes list the project's Kotlin version as supported. KSP 2.x has its own version line; it is not Kotlin-prefixed. See `../version-matrix.md`.
 
 ---
 

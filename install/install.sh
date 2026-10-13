@@ -18,8 +18,10 @@
 #   copilot    GitHub Copilot     (.github/copilot-instructions.md)
 #   all        AGENTS.md + every project-scope adapter above
 #
-# The skill directory is cloned/copied once; each adapter is a ~7 KB pointer file that carries
-# the always-on rules and the routing table, so the agent reads the 24k-line skill on demand.
+# The skill directory is copied once. Every adapter is rendered from the single bootstrap,
+# install/AGENTS.md, plus the frontmatter its agent needs — there are no per-agent copies to
+# drift. Project scope writes a path relative to the project root, so the rendered files can
+# be committed and work for every clone.
 set -euo pipefail
 
 AGENT="${1:-}"; shift || true
@@ -28,40 +30,100 @@ while [ $# -gt 0 ]; do case "$1" in
   --scope) SCOPE="$2"; shift 2;;
   --project-dir) PROJECT_DIR="$2"; shift 2;;
   *) echo "unknown option: $1" >&2; exit 2;; esac; done
-[ -n "$AGENT" ] || { sed -n '2,31p' "$0" | sed 's/^# \{0,1\}//'; exit 2; }
+[ -n "$AGENT" ] || { sed -n '2,24p' "$0" | sed 's/^# \{0,1\}//'; exit 2; }
 
 HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 SKILL_SRC="$(dirname "$HERE")"
 SKILL_NAME="android-kmp-development"
+TEMPLATE="$HERE/AGENTS.md"
+BEGIN="<!-- $SKILL_NAME:begin -->"
+END="<!-- $SKILL_NAME:end -->"
 
-# Where the skill itself lives, and the path the adapters point at.
+# SKILL_DEST is where the skill is copied; SKILL_REF is the path written into adapters.
 if [ "$SCOPE" = user ]; then
   SKILL_DEST="$HOME/.$SKILL_NAME"
+  SKILL_REF="$SKILL_DEST"
 else
   SKILL_DEST="$PROJECT_DIR/.agent-skills/$SKILL_NAME"
+  SKILL_REF=".agent-skills/$SKILL_NAME"
 fi
 
-place_skill() {
-  if [ "$(cd "$SKILL_SRC" && pwd)" = "$(cd "$SKILL_DEST" 2>/dev/null && pwd || echo _)" ]; then
-    echo "  skill already at $SKILL_DEST"; return
+# copy_skill <destination>  — the skill without its git history, research record or build output
+copy_skill() {
+  local dest="$1"
+  if [ "$(cd "$SKILL_SRC" && pwd)" = "$(cd "$dest" 2>/dev/null && pwd || echo _)" ]; then
+    echo "  skill already at $dest"; return
   fi
-  mkdir -p "$(dirname "$SKILL_DEST")"
-  rm -rf "$SKILL_DEST"
-  cp -R "$SKILL_SRC" "$SKILL_DEST"
-  rm -rf "$SKILL_DEST/.git"
-  echo "  skill  -> $SKILL_DEST"
+  mkdir -p "$(dirname "$dest")"
+  rm -rf "$dest"
+  cp -R "$SKILL_SRC" "$dest"
+  rm -rf "$dest/.git" "$dest/.agents" "$dest/skills-lock.json" "$dest/research"
+  find "$dest" -type d \( -name build -o -name .gradle -o -name .kotlin \) -prune -exec rm -rf {} +
+  echo "  skill  -> $dest"
 }
 
-# render <template> <destination-file>  — substitutes SKILL_PATH, never clobbers silently
-render() {
-  local tpl="$HERE/$1" dest="$2"
+place_skill() { copy_skill "$SKILL_DEST"; }
+
+body() { sed "s|SKILL_PATH|$SKILL_REF|g" "$TEMPLATE"; }
+
+# frontmatter <agent>  — the only thing that differs between adapters
+frontmatter() {
+  local short="Android and Kotlin Multiplatform engineering rules"
+  local long="$short; inspect before implementing, match the codebase, never invent versions or APIs"
+  case "$1" in
+    cursor) cat <<F
+---
+description: $long
+globs: ["**/*.kt","**/*.kts","**/*.java","**/*.swift","**/*.toml","**/*.pro","**/AndroidManifest.xml","**/Info.plist"]
+alwaysApply: true
+---
+F
+      ;;
+    kiro) printf -- '---\ninclusion: always\n---\n' ;;
+    trae) cat <<F
+---
+description: $short
+globs: ["**/*.kt","**/*.kts","**/*.swift","**/*.toml"]
+alwaysApply: true
+---
+F
+      ;;
+    windsurf) printf -- '---\ntrigger: always_on\ndescription: %s\n---\n' "$short" ;;
+    antigravity) printf -- '---\ntrigger: always_on\ndescription: %s\n---\n' "$long" ;;
+  esac
+}
+
+# render_owned <agent> <file>  — a rule file this skill owns outright; rewritten on every run
+render_owned() {
+  local dest="$2"
   mkdir -p "$(dirname "$dest")"
-  if [ -e "$dest" ] && ! grep -q "$SKILL_NAME" "$dest" 2>/dev/null; then
-    local bak="$dest.bak.$(date +%s)"; cp "$dest" "$bak"
-    echo "  NOTE: existing $dest backed up to $bak"
-    { cat "$bak"; echo; echo "---"; echo; sed "s|SKILL_PATH|$SKILL_DEST|g" "$tpl"; } > "$dest"
+  { frontmatter "$1"; body; } > "$dest"
+  echo "  adapter -> $dest"
+}
+
+# render_shared <file>  — a file the user may also write in (AGENTS.md, copilot-instructions.md).
+# Only the text between the markers is ever replaced; everything else is left as it was.
+render_shared() {
+  local dest="$1" tmp
+  mkdir -p "$(dirname "$dest")"
+  if [ ! -e "$dest" ]; then
+    { echo "$BEGIN"; body; echo "$END"; } > "$dest"
+  elif grep -qF "$BEGIN" "$dest" && grep -qF "$END" "$dest"; then
+    tmp="$(mktemp)"
+    {
+      awk -v b="$BEGIN" '$0 == b { exit } { print }' "$dest"
+      echo "$BEGIN"; body; echo "$END"
+      awk -v e="$END" 'seen { print } $0 == e { seen = 1 }' "$dest"
+    } > "$tmp"
+    cat "$tmp" > "$dest"; rm -f "$tmp"
   else
-    sed "s|SKILL_PATH|$SKILL_DEST|g" "$tpl" > "$dest"
+    local bak="$dest.bak.$(date +%s)"; cp "$dest" "$bak"
+    echo "  NOTE: existing $dest backed up to $bak; bootstrap appended"
+    if grep -q "$SKILL_NAME" "$dest"; then
+      echo "  NOTE: $dest already mentions $SKILL_NAME outside the markers (an install from an"
+      echo "        older version?). Remove the old block by hand; this run did not touch it."
+    fi
+    { echo; echo "$BEGIN"; body; echo "$END"; } >> "$dest"
   fi
   echo "  adapter -> $dest"
 }
@@ -71,49 +133,47 @@ echo "Installing $SKILL_NAME for: $AGENT  (scope: $SCOPE)"
 case "$AGENT" in
   claude)
     # Native skill system — no adapter needed; the host reads SKILL.md's frontmatter.
-    DEST="$([ "$SCOPE" = user ] && echo "$HOME/.claude/skills" || echo "$PROJECT_DIR/.claude/skills")/$SKILL_NAME"
-    mkdir -p "$(dirname "$DEST")"; rm -rf "$DEST"; cp -R "$SKILL_SRC" "$DEST"; rm -rf "$DEST/.git"
-    echo "  skill  -> $DEST"
+    copy_skill "$([ "$SCOPE" = user ] && echo "$HOME/.claude/skills" || echo "$PROJECT_DIR/.claude/skills")/$SKILL_NAME"
     echo "  Restart the session, then /skills lists it."
     ;;
   agents)
-    place_skill; render AGENTS.md "$PROJECT_DIR/AGENTS.md" ;;
+    place_skill; render_shared "$PROJECT_DIR/AGENTS.md" ;;
   codex)
     place_skill
-    [ "$SCOPE" = user ] && render AGENTS.md "${CODEX_HOME:-$HOME/.codex}/AGENTS.md" \
-                        || render AGENTS.md "$PROJECT_DIR/AGENTS.md" ;;
+    if [ "$SCOPE" = user ]; then render_shared "${CODEX_HOME:-$HOME/.codex}/AGENTS.md"
+    else render_shared "$PROJECT_DIR/AGENTS.md"; fi ;;
   opencode)
     place_skill
-    [ "$SCOPE" = user ] && render AGENTS.md "$HOME/.config/opencode/AGENTS.md" \
-                        || render AGENTS.md "$PROJECT_DIR/AGENTS.md" ;;
+    if [ "$SCOPE" = user ]; then render_shared "$HOME/.config/opencode/AGENTS.md"
+    else render_shared "$PROJECT_DIR/AGENTS.md"; fi ;;
   cursor)
-    place_skill; render cursor.mdc "$PROJECT_DIR/.cursor/rules/$SKILL_NAME.mdc" ;;
+    place_skill; render_owned cursor "$PROJECT_DIR/.cursor/rules/$SKILL_NAME.mdc" ;;
   kiro)
     place_skill
-    [ "$SCOPE" = user ] && render kiro-steering.md "$HOME/.kiro/steering/$SKILL_NAME.md" \
-                        || render kiro-steering.md "$PROJECT_DIR/.kiro/steering/$SKILL_NAME.md" ;;
+    if [ "$SCOPE" = user ]; then render_owned kiro "$HOME/.kiro/steering/$SKILL_NAME.md"
+    else render_owned kiro "$PROJECT_DIR/.kiro/steering/$SKILL_NAME.md"; fi ;;
   trae)
     place_skill
-    [ "$SCOPE" = user ] && render trae-rule.md "$HOME/.trae/user_rules/$SKILL_NAME.md" \
-                        || render trae-rule.md "$PROJECT_DIR/.trae/rules/$SKILL_NAME.md" ;;
+    if [ "$SCOPE" = user ]; then render_owned trae "$HOME/.trae/user_rules/$SKILL_NAME.md"
+    else render_owned trae "$PROJECT_DIR/.trae/rules/$SKILL_NAME.md"; fi ;;
   windsurf)
-    place_skill; render windsurf-rule.md "$PROJECT_DIR/.windsurf/rules/$SKILL_NAME.md" ;;
+    place_skill; render_owned windsurf "$PROJECT_DIR/.windsurf/rules/$SKILL_NAME.md" ;;
   antigravity)
     # Antigravity also reads AGENTS.md natively; .agents/rules gives a declared trigger.
     place_skill
-    [ "$SCOPE" = user ] && render antigravity-rule.md "$HOME/.gemini/config/rules/$SKILL_NAME.md" \
-                        || render antigravity-rule.md "$PROJECT_DIR/.agents/rules/$SKILL_NAME.md" ;;
+    if [ "$SCOPE" = user ]; then render_owned antigravity "$HOME/.gemini/config/rules/$SKILL_NAME.md"
+    else render_owned antigravity "$PROJECT_DIR/.agents/rules/$SKILL_NAME.md"; fi ;;
   copilot)
-    place_skill; render AGENTS.md "$PROJECT_DIR/.github/copilot-instructions.md" ;;
+    place_skill; render_shared "$PROJECT_DIR/.github/copilot-instructions.md" ;;
   all)
     place_skill
-    render AGENTS.md       "$PROJECT_DIR/AGENTS.md"
-    render cursor.mdc      "$PROJECT_DIR/.cursor/rules/$SKILL_NAME.mdc"
-    render kiro-steering.md "$PROJECT_DIR/.kiro/steering/$SKILL_NAME.md"
-    render trae-rule.md    "$PROJECT_DIR/.trae/rules/$SKILL_NAME.md"
-    render windsurf-rule.md "$PROJECT_DIR/.windsurf/rules/$SKILL_NAME.md"
-    render antigravity-rule.md "$PROJECT_DIR/.agents/rules/$SKILL_NAME.md"
-    render AGENTS.md       "$PROJECT_DIR/.github/copilot-instructions.md"
+    render_shared            "$PROJECT_DIR/AGENTS.md"
+    render_owned cursor      "$PROJECT_DIR/.cursor/rules/$SKILL_NAME.mdc"
+    render_owned kiro        "$PROJECT_DIR/.kiro/steering/$SKILL_NAME.md"
+    render_owned trae        "$PROJECT_DIR/.trae/rules/$SKILL_NAME.md"
+    render_owned windsurf    "$PROJECT_DIR/.windsurf/rules/$SKILL_NAME.md"
+    render_owned antigravity "$PROJECT_DIR/.agents/rules/$SKILL_NAME.md"
+    render_shared            "$PROJECT_DIR/.github/copilot-instructions.md"
     ;;
   *) echo "unknown agent: $AGENT" >&2; exit 2;;
 esac

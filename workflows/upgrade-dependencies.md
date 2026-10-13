@@ -76,7 +76,7 @@ Upgrading Kotlin is never a single-version change. See `../references/version-ma
 
 | If upgrading | MUST also move, in the same change |
 |---|---|
-| Kotlin | Compose compiler plugin (**== Kotlin version exactly**), KSP (Kotlin-matched), and check CMP compatibility |
+| Kotlin | Compose compiler plugin (**== Kotlin version exactly**), KSP (a release whose notes list the new Kotlin as supported — KSP 2.x has its own version line), and check CMP compatibility |
 | CMP | check the CMP release note for its supported Kotlin version |
 | AGP | check Gradle minimum and the maximum supported API level |
 | Gradle | check the AGP compatibility matrix |
@@ -199,7 +199,7 @@ Run section 7.
 **MUST:**
 
 1. Verify every target version against the canonical source in `../references/version-matrix.md`. Never from memory.
-2. Keep the lockstep set internally consistent: Compose compiler plugin **==** Kotlin; KSP matched to Kotlin; CMP compatible with Kotlin.
+2. Keep the lockstep set internally consistent: Compose compiler plugin **==** Kotlin; KSP release supports this Kotlin (per its release notes); CMP compatible with Kotlin.
 3. Change versions in the version catalog only, where one exists.
 4. Change one class (A/B/C/D) per change.
 5. Run `./gradlew --stop` before the first verification after a toolchain change.
@@ -246,7 +246,7 @@ Run section 7.
 |---|---|
 | Configuration fails after the bump | Usually a plugin/Gradle incompatibility. **MUST** check the AGP↔Gradle and Kotlin↔plugin matrices before editing code. |
 | "Compose Compiler / Kotlin version mismatch" | The lockstep rule. **MUST** set the plugin version equal to Kotlin. **MUST NOT** suppress the check. |
-| KSP fails, or silently generates nothing | KSP version not matched to Kotlin. **MUST** use the Kotlin-matched KSP release. Empty output with a green build is the dangerous case — V7 exists for it. |
+| KSP fails, or silently generates nothing | The KSP release does not support this Kotlin version. **MUST** move to a KSP release whose notes list it (`../references/version-matrix.md`). Empty output with a green build is the dangerous case — V7 exists for it. |
 | Only a native target fails | Typically a dependency with no native artifact at the new version → D5. **MUST NOT** drop the target to make it pass. |
 | A test fails after the upgrade | **MUST** determine whether behaviour changed or the test was wrong. If behaviour changed, report it as a behaviour change — that is a product decision. **MUST NOT** adjust the assertion to match the new output without saying so. |
 | Release build fails while debug passes | R8. A keep rule has gone stale or a library's consumer rules changed. **MUST** fix the keep rule; **MUST NOT** disable minification. |

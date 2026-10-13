@@ -1,6 +1,6 @@
 # Project Structure Convention
 
-**Status:** house convention. When this file (or a copy named `PROJECT_STRUCTURE.md` in a repo) is present, **file placement follows it** and overrides the module-based layout in `../../references/architecture/modularization.md`. The layer *rules* (dependency direction, repository boundary, error handling, cancellation) still come from the references — this file decides *where* things go, not *how* they behave.
+**Status:** house convention — one opinionated layout, opt-in. It applies only to a repository that contains a copy of this file named `PROJECT_STRUCTURE.md`; there, **file placement follows it** and overrides the module-based layout in `../../references/architecture/modularization.md`. The layer *rules* (dependency direction, repository boundary, error handling, cancellation) still come from the references — this file decides *where* things go, not *how* they behave.
 
 **Shape:** package-by-layer inside one Gradle module (or one `commonMain` in KMP). Four roots: `core` → `domain` → `data` → `presentation`. Features are packages, not modules.
 
@@ -60,13 +60,13 @@ presentation ──► domain ◄── data
 | `review/` | in-app review request wrapper | — |
 | `di/` | `CoreModule.kt`, `NetworkModule.kt`, `PlatformModule.kt` (`expect fun platformModule(): Module`) | feature bindings |
 
-**`core` MUST be feature-blind.** A `core` class that mentions "translation" or "conversation" belongs in `domain`, `data`, or `presentation`.
+**`core` MUST be feature-blind.** A `core` class that names a feature ("translation", "history") belongs in `domain`, `data`, or `presentation`.
 
 ---
 
 ## `domain/` — pure Kotlin, no frameworks
 
-Feature packages (`conversation`, `translation`, `speech`, `texttospeech`, `camera`, `history`, `phrase`, `punctuation`, `billing`, `subscription`, `notification`, `discount`, `usage`, `user`) repeat under each sub-root. **Adding a feature = adding the same package name under `model`, `repository`, `usecase` (and `service`/`event` if needed), plus the mirrors in `data` and `presentation`.**
+Feature packages (for example `user`, `history`, `translation`, `subscription`) repeat under each sub-root. **Adding a feature = adding the same package name under `model`, `repository`, `usecase` (and `service`/`event` if needed), plus the mirrors in `data` and `presentation`.**
 
 | Package | Contains | Rules |
 |---|---|---|
@@ -280,7 +280,20 @@ Both delivery paths **MUST** start from the same domain use case, so they cannot
 **Deviations this structure makes from the reference defaults** (record them in reports as "codebase convention"):
 
 1. Package-by-layer in one module instead of Gradle modules → visibility is by `internal` within the module and by lint rule across layers, not by module boundary.
-2. A use case per feature package is expected; still **do not** add pass-through use cases.
+2. The `domain` layer always exists here; the reference default treats it as optional. A `usecase/<feature>` package is created only when a real use case exists — **do not** add pass-through use cases to fill it.
+3. Three models per concept (`dto` → `entity` → `domain.model`) by default; the reference default is "separate where the codebase does".
+
+## Relation to `examples/user-profile/`
+
+The compiled example predates this convention and does **not** follow it. Use the example for layer behaviour and tests; use this file for placement and naming.
+
+| | `examples/user-profile/` | This convention |
+|---|---|---|
+| Packages | flat: `data`, `database`, `network`, `settings`, `session`, `presentation`, `ui` | `core` / `domain` / `data` / `presentation`, feature packages beneath |
+| Screen file | `ui/UserProfileScreen.kt`, ViewModel and state in `presentation/` | all three in `presentation/screen/<name>/` |
+| Screen parameters | individual lambdas (`onRefresh`, `onMessageShown`) | `<Name>Actions` + `<Name>NavigationActions` |
+| ViewModel action naming | `onMessageShown(id)` | `userMessageShown(id)` — verb, no `on` prefix |
+| Verification | compiled and tested on JVM + iOS | only the scaffold output is compiled — § Verification |
 
 ---
 
@@ -290,10 +303,10 @@ Both delivery paths **MUST** start from the same domain use case, so they cannot
 
 ```bash
 # create the package tree + navigation key types (AppRoute, MainTab)
-templates/structure/scaffold.sh init  --root src/commonMain/kotlin --package com.live.voice.translator.instant.speakandtranslate
+templates/structure/scaffold.sh init  --root src/commonMain/kotlin --package com.example.app
 # add a screen set (3 files) + domain/data feature packages
-templates/structure/scaffold.sh screen Translation --root src/commonMain/kotlin --package com.live.voice.translator.instant.speakandtranslate
-templates/structure/scaffold.sh feature translation --root src/commonMain/kotlin --package com.live.voice.translator.instant.speakandtranslate
+templates/structure/scaffold.sh screen Translation --root src/commonMain/kotlin --package com.example.app
+templates/structure/scaffold.sh feature translation --root src/commonMain/kotlin --package com.example.app
 ```
 
 For an Android-only project use `--root app/src/main/java` (or `kotlin`).

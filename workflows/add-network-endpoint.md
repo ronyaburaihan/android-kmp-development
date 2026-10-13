@@ -38,8 +38,8 @@ Run `inspect-project.md`, then:
 # the HTTP client and its configuration
 grep -rn 'HttpClient(\|Retrofit.Builder\|install(ContentNegotiation' --include='*.kt' . | grep -v build/
 # existing data sources and DTOs
-find . -name '*RemoteDataSource*.kt' -o -name '*ApiService*.kt' -o -name '*Api.kt' -not -path '*/build/*'
-find . -name '*Dto.kt' -o -name '*Response.kt' -not -path '*/build/*' | head -20
+find . \( -name '*RemoteDataSource*.kt' -o -name '*ApiService*.kt' -o -name '*Api.kt' \) -not -path '*/build/*'
+find . \( -name '*Dto.kt' -o -name '*Response.kt' \) -not -path '*/build/*' | head -20
 ```
 
 **MUST** read one complete existing endpoint implementation end to end and record:

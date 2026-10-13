@@ -42,7 +42,7 @@ Run `inspect-project.md`, then establish measurement capability.
 ```bash
 # can anything be measured?
 grep -rn 'androidx.benchmark\|MacrobenchmarkRule\|baselineprofile' --include='*.gradle.kts' --include='*.kt' . | grep -v build/
-find . -name 'baseline-prof.txt' -o -name 'startup-prof.txt' -not -path '*/build/*'
+find . \( -name 'baseline-prof.txt' -o -name 'startup-prof.txt' \) -not -path '*/build/*'
 grep -rn 'profileable' --include='AndroidManifest.xml' . | grep -v build/
 grep -rn 'isMinifyEnabled\|optimization\s*{' --include='*.gradle.kts' . | grep -v build/
 grep -rn 'reportsDestination\|metricsDestination\|composeCompiler\s*{' --include='*.gradle.kts' . | grep -v build/

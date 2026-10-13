@@ -14,7 +14,7 @@ These rules apply to **every** workflow in this directory. A workflow may add co
 
 ### 1. Inspect before you write — MUST
 
-**MUST** complete `inspect-project.md` (or the workflow's own inspection step, which supersedes it) **before** creating or modifying any file.
+**MUST** complete `inspect-project.md` (or the workflow's own inspection step, which supersedes it) **before** creating or modifying any file. A task the entry point sizes as **small** (`../SKILL.md` § Task size) runs the short form of the inspection and the short report; everything else in this contract applies to it unchanged.
 
 **MUST NOT** create a file whose purpose is already served by an existing file. Find the existing one and extend it.
 
@@ -63,16 +63,9 @@ If part of the task is blocked, **MUST** complete every unblocked part and state
 
 ### 6. Stop conditions — MUST
 
-**MUST** stop and ask the user when:
+The stop conditions are listed once, in the entry point: `../SKILL.md` § Stop and ask (mirrored in `../install/AGENTS.md` for agents without a skill system). **MUST** stop and ask at each of them, and at every decision point a workflow defines.
 
-- a decision point in the workflow is reached
-- the task cannot proceed without one of the forbidden actions in rule 3
-- the build was already broken before you started
-- the task's premise appears wrong (the described bug does not reproduce; the described code does not exist)
-- two reference rules conflict for this codebase
-- the change would touch a signing key, a store credential, a production config file, or a secret
-
-**MUST NOT** guess past a stop condition to keep momentum.
+**MUST NOT** guess past a stop condition to keep momentum. With no user available, complete what is unblocked and report `NEEDS DECISION`.
 
 ### 7. Commits — MUST
 
@@ -82,7 +75,7 @@ If part of the task is blocked, **MUST** complete every unblocked part and state
 
 ## Base report format
 
-Every workflow ends with a report. Workflows specialise the middle; this skeleton is mandatory.
+Every workflow ends with a report. Workflows specialise the middle; this skeleton is mandatory for standard tasks. Small tasks report Outcome, Changes made and Validation performed, and add the other sections only when they have content.
 
 ```markdown
 ## <Workflow name> — <task summary>
@@ -224,7 +217,6 @@ Write "None." if none.>
 | "we're shipping tomorrow" | `prepare-release.md` |
 | "roll it out on Play" | `release-android.md` |
 | "submit to the App Store" | `release-ios.md` |
-
 | "what did we decide / I'm out of context" | `../process/handoff.md` |
 | "how could this session have gone better?" | `../process/retro.md` |
 

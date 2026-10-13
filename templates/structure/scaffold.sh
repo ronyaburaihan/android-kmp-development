@@ -28,8 +28,7 @@ init() {
     core/analytics/{event,parameter,tracker} core/ads/{banner,interstitial,rewarded,config} \
     core/billing/{product,purchase,subscription,config} core/notification/{permission,channel,scheduler} \
     core/review core/di \
-    domain/{model,repository,usecase} domain/service/{conversation,translation,speech,texttospeech,camera,document} \
-    domain/event/{conversation,translation,speech,subscription} \
+    domain/{model,repository,usecase,service,event} \
     data/repository data/source/local/room/{database,dao,entity,migration} data/source/local/datastore \
     data/source/remote/auth/dto data/model data/mapper data/analytics/{mapper,tracker} data/di \
     presentation/app presentation/component presentation/screen presentation/navigation \

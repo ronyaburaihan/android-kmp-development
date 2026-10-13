@@ -2,7 +2,7 @@
 
 What this skill does **not** verify, does not cover, or could not confirm. Read before relying on it for anything in the first two tables.
 
-**As of:** 2026-10-03.
+**As of:** 2026-10-03; installer, task-size and consistency entries updated 2026-10-08.
 
 ---
 
@@ -50,7 +50,7 @@ Each appears in the reference set with that tag. None should be repeated to a us
 | **Snippets inside `references/*.md` and `workflows/*.md`, the templates, and the marked sections of `examples/ui-layer.md`** | structurally checked against the compiled example where they overlap; otherwise unverified. Treat as patterns. |
 | **CI template** | `templates/ci-github-actions.yml` is valid YAML; it was not executed on a hosted runner. |
 | **Process primitives** | `process/` was added on 2026-10-03. The mechanics are adapted from Matt Pocock's skills (MIT) and the Android/KMP mapping is this skill's own: the seam table cites 11 test classes that exist and were executed in `examples/user-profile/`, and every relative path in `process/` resolves. But **no primitive has been behaviourally evaluated** — whether an agent given `tdd.md` actually writes the test first, or given `diagnostic-loop.md` actually refuses to hypothesise before building a loop, is untested. `EVALUATION.md` defines the checks; none has been run. |
-| **Agent adapters** | `install/` was run into a throwaway project and all 57 routing targets resolved, and every path was verified against first-party docs on 2026-10-03. But the adapters were **not** behaviourally tested inside Codex, Cursor, Kiro, Trae, Windsurf, Antigravity, OpenCode or Copilot — whether each agent honours a rule file of this shape and follows the routing table rather than guessing is unverified. |
+| **Agent adapters** | `install/` was run into a throwaway project (re-run 2026-10-08 after the installer was rewritten: idempotent, user content outside the marked block preserved, project-relative paths) and every routing target resolved; the agent file locations were verified against first-party docs on 2026-10-03. But the adapters were **not** behaviourally tested inside Codex, Cursor, Kiro, Trae, Windsurf, Antigravity, OpenCode or Copilot — whether each agent honours a rule file of this shape and follows the routing table rather than guessing is unverified. |
 
 ## 3. Topics not covered
 
@@ -76,6 +76,8 @@ Each appears in the reference set with that tag. None should be repeated to a us
 - **The reference defaults are opinions in places.** Everything tagged `[DEFAULT]` is a defensible engineering choice, not a requirement, and the standing contract tells the agent to match the codebase over it. A codebase that consistently does otherwise is not wrong.
 - **Hilt vs Koin.** Google recommends Hilt; this skill's examples use Koin because Hilt cannot compile in `commonMain`. That is a constraint, not a preference, and the skill says so — but Android-only projects on Hilt should stay on Hilt.
 - **The compiled example is a library module, not an app.** It has a Compose screen and a Swift-facing facade, but no navigation host, no Activity/`Application`, and no Xcode project. It proves every layer compiles and the UI renders in tests; it does not prove an app launches.
+- **The task-size tier is untested.** `SKILL.md` § Task size (added 2026-10-08) lets a small task skip the full inspection and report. Whether agents size tasks correctly, or under-size them to skip work, has not been measured.
+- **Rule levels are top-heavy.** `MUST` appears roughly seven times as often as `SHOULD` across `references/` and `workflows/`. Many of those are procedure steps rather than correctness or security boundaries; they have not been re-levelled, because doing so without an eval would change behaviour blind.
 - **No agent-run eval suite ships with the skill.** `EVALUATION.md` defines what to check and suggests scenarios; it does not include executable evals.
 - **Secondary sources were used for leads.** Where a first-party source could not be reached, the claim is tagged rather than omitted. Tagged claims are the honest boundary of what this skill knows. (Play/Billing deadlines and Circuit's test API were subsequently confirmed from first-party sources and untagged.)
 

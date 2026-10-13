@@ -4,24 +4,25 @@ The skill is 35 references, 24 workflows, 8 process primitives and a compiled ex
 load their instruction file **fully into context** every session, and OpenAI Codex caps combined
 instructions at **32 KiB**. Pasting the skill into an `AGENTS.md` is therefore not an option.
 
-Instead each agent gets a **~8 KB bootstrap**: the non-negotiable rules, the rule-level legend, the
+Instead each agent gets a **~10 KB bootstrap**: the non-negotiable rules, the rule-level legend, the
 stop conditions, and the **routing table** naming the file to open for each task. The agent reads
 the rest on demand. That is the same progressive disclosure Claude Code's skill system gives
 natively, reproduced for agents that have no skill system.
 
 ```
 install/
-  AGENTS.md          the portable bootstrap — the open AGENTS.md standard
-  cursor.mdc         Cursor project rule (.mdc frontmatter: globs, alwaysApply)
-  kiro-steering.md   Kiro steering file (inclusion: always)
-  trae-rule.md       Trae project rule
-  windsurf-rule.md   Windsurf rule (trigger: always_on)
-  antigravity-rule.md  Google Antigravity rule (trigger: always_on)
-  install.sh         places the skill and renders the right adapter
+  AGENTS.md          the portable bootstrap — the open AGENTS.md standard, and the only copy
+  install.sh         places the skill and renders the adapter each agent reads
 ```
 
-Every adapter is generated from `AGENTS.md`, so there is one source of truth. The literal
-`SKILL_PATH` token is substituted with the installed location at install time.
+There are no per-agent adapter files in this directory. `install.sh` renders each one at install
+time as `AGENTS.md` plus the frontmatter that agent needs (Cursor/Trae `globs` + `alwaysApply`,
+Kiro `inclusion: always`, Windsurf/Antigravity `trigger: always_on`), so the copies cannot drift.
+
+The literal `SKILL_PATH` token is substituted at install time: with a path **relative to the
+project root** (`.agent-skills/android-kmp-development`) for project scope, so the rendered files
+can be committed and work in every clone and in CI; with the absolute path under `$HOME` for user
+scope. The installed copy leaves out `research/`, git history and build output.
 
 ## One command
 
@@ -82,8 +83,9 @@ exist where the agent's own format offers something `AGENTS.md` cannot:
 
 ## Manual install
 
-If you would rather not run the script: copy this repository anywhere, then copy the adapter your
-agent reads and replace the `SKILL_PATH` token with the path to the copy.
+If you would rather not run the script: copy this repository anywhere, then render `AGENTS.md`
+with the `SKILL_PATH` token replaced by the path to the copy. For Cursor, Kiro, Trae, Windsurf or
+Antigravity, prepend the frontmatter shown in `install.sh` § `frontmatter`.
 
 ```bash
 git clone https://github.com/ronyaburaihan/android-kmp-development-skill.git ~/.android-kmp-development
@@ -93,17 +95,28 @@ sed "s|SKILL_PATH|$HOME/.android-kmp-development|g" \
 
 ## Existing instruction files are not clobbered
 
-If the target file exists and does not already mention this skill, the installer backs it up to
-`<file>.bak.<timestamp>` and **appends** the bootstrap after a `---` separator. Your own rules stay
-first, which matters: in most agents later content wins on conflict, and the skill's rules are
-meant to be the more specific layer.
+In a file you may also write in (`AGENTS.md`, `.github/copilot-instructions.md`) the bootstrap
+lives between two markers:
+
+```
+<!-- android-kmp-development:begin -->
+…
+<!-- android-kmp-development:end -->
+```
+
+First install into an existing file: it is backed up to `<file>.bak.<timestamp>` and the block is
+**appended**. Your own rules stay first, which matters: in most agents later content wins on
+conflict, and the skill's rules are meant to be the more specific layer. Every later run replaces
+only the text between the markers; anything you wrote before or after them is left alone.
+
+The dedicated rule files (`.cursor/rules/android-kmp-development.mdc` and the like) belong to the
+skill and are rewritten whole on each run — do not edit them by hand.
 
 ## Verifying an install
 
 ```bash
 grep -c 'android-kmp-development' ./AGENTS.md        # adapter present
-grep -o '/[^ `]*android-kmp-development' ./AGENTS.md | head -1   # where it points
-ls "$(grep -o '/[^ `]*android-kmp-development' ./AGENTS.md | head -1)/SKILL.md"
+ls .agent-skills/android-kmp-development/SKILL.md     # project scope: where it points
 ```
 
 Then ask the agent something concrete — *"what is the Kotlin ↔ Compose compiler version rule?"* It
@@ -112,7 +125,8 @@ should read `references/version-matrix.md` rather than answer from memory.
 ## Caveat
 
 The bootstrap and the adapters are **generated and path-verified** — the installer was run into a
-throwaway project and all 57 routing targets resolved from the installed copy. They have **not**
+throwaway project on 2026-10-08, twice, and every routing target resolved from the installed copy;
+hand-written content before and after the marked block survived the second run. They have **not**
 been behaviourally tested inside Codex, Cursor, Kiro, Trae, Windsurf, Antigravity, OpenCode or
 Copilot. Whether
 each agent honours an always-on rule file of this shape, and actually follows the routing table
