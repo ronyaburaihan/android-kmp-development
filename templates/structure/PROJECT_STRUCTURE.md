@@ -121,7 +121,7 @@ Every screen owns exactly three files in `presentation/screen/<name>/`, plus an 
 
 | File | Contains | MUST NOT contain |
 |---|---|---|
-| `<Name>Screen.kt` | `<Name>NavigationActions`, `<Name>Actions`, `<Name>Route` (stateful), `<Name>Screen` (stateless), previews | a nav controller; business logic |
+| `<Name>Screen.kt` | `<Name>NavigationActions`, `<Name>Actions`, `<Name>Screen` (stateful), `<Name>ScreenContent` (stateless), previews | a nav controller; business logic |
 | `<Name>ViewModel.kt` | `class <Name>ViewModel(...) : ViewModel()` — one `uiState: StateFlow<<Name>UiState>`, public methods for actions | Compose imports; navigation calls; `Channel`/`SharedFlow` to the UI |
 | `<Name>UiState.kt` | `@Immutable data class <Name>UiState(...)` and its derived `val`s | lambdas; flows; mutable collections |
 | `component/*.kt` | stateless pieces used only by this screen — values, lambdas, `modifier` | a ViewModel; reads of app-state CompositionLocals |
@@ -138,7 +138,7 @@ data class HomeNavigationActions(
     val onOpenMemory: (String) -> Unit,
 )
 
-/** What the user can do. Built by HomeRoute; defaults keep previews short. */
+/** What the user can do. Built by HomeScreen; defaults keep previews short. */
 @Immutable
 internal data class HomeActions(
     val onRefresh: () -> Unit = {},
@@ -146,14 +146,14 @@ internal data class HomeActions(
     val onMemoryClick: (String) -> Unit = {},
 )
 
-/** Route: ViewModel + navigation. The only place the two meet. No layout. */
+/** Screen (stateful): ViewModel + navigation. The only place the two meet. No layout. */
 @Composable
-fun HomeRoute(
+fun HomeScreen(
     navigationActions: HomeNavigationActions,
     viewModel: HomeViewModel = koinViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-    HomeScreen(
+    HomeScreenContent(
         uiState = uiState,
         actions = HomeActions(
             onRefresh = viewModel::refresh,
@@ -163,9 +163,9 @@ fun HomeRoute(
     )
 }
 
-/** Screen: values in, lambdas out. Previewable and testable without DI or navigation. */
+/** Content (stateless): values in, lambdas out. Previewable and testable without DI or navigation. */
 @Composable
-internal fun HomeScreen(
+internal fun HomeScreenContent(
     uiState: HomeUiState,
     actions: HomeActions,
     modifier: Modifier = Modifier,
@@ -174,13 +174,13 @@ internal fun HomeScreen(
 
 | Rule | Level |
 |---|---|
-| `<Name>Route` takes `navigationActions` first and the ViewModel last, defaulted to `koinViewModel()`. | MUST |
-| `<Name>Screen` takes `uiState`, `actions`, `modifier` — nothing else. It **MUST NOT** read a nav controller or an app-state CompositionLocal. | MUST |
+| `<Name>Screen` takes `navigationActions` first and the ViewModel last, defaulted to `koinViewModel()`. | MUST |
+| `<Name>ScreenContent` takes `uiState`, `actions`, `modifier` — nothing else. It **MUST NOT** read a nav controller or an app-state CompositionLocal. | MUST |
 | `<Name>NavigationActions` has **no** default values, so a forgotten exit is a compile error. `<Name>Actions` has defaults, for previews. | SHOULD |
-| `<Name>NavigationActions` is consumed by `<Name>Route` only; it is never passed into `<Name>Screen` or a component. | MUST |
+| `<Name>NavigationActions` is consumed by `<Name>Screen` only; it is never passed into `<Name>ScreenContent` or a component. | MUST |
 | A click that only navigates goes `navigationActions` → `actions` and skips the ViewModel. | SHOULD |
-| A decision that picks between two destinations (premium gate) is made once, in `<Name>Route` or the ViewModel — never inside a component. | MUST |
-| Layout mode, window size and similar are read once in `<Name>Screen` and passed down as parameters. | SHOULD |
+| A decision that picks between two destinations (premium gate) is made once, in `<Name>Screen` or the ViewModel — never inside a component. | MUST |
+| Layout mode, window size and similar are read once in `<Name>ScreenContent` and passed down as parameters. | SHOULD |
 | Portrait/landscape/tablet variants are one composable with parameters, not copies. | SHOULD |
 | Composable parameters: required first, then `modifier`, then optionals. | MUST [OFFICIAL] |
 | Move a composable to `component/` once `<Name>Screen.kt` passes ~300 lines. | SHOULD |
@@ -189,9 +189,9 @@ internal fun HomeScreen(
 
 - Exposes exactly one `uiState: StateFlow<<Name>UiState>`; the `MutableStateFlow` is private and written with `update { }`. Prefer `combine(...).stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), initial)` when state is derived from repository streams.
 - Actions are public methods named for what happens (`refresh()`, `delete()`), not a sealed event type.
-- Reads navigation arguments from `SavedStateHandle`; the Route receives no ids.
+- Reads navigation arguments from `SavedStateHandle`; the screen composable receives no ids.
 - Rethrows `CancellationException`; puts every other failure in `uiState` as `UiText`.
-- **One-off outcomes are state.** A message is an item in `userMessages` that the UI acknowledges (`userMessageShown(id)`); "saved, now leave" is a flag (`isSaved`) that `<Name>Route` reacts to in a `LaunchedEffect` and then calls its navigation action. Mechanics: `../../references/architecture/mvvm-udf.md`.
+- **One-off outcomes are state.** A message is an item in `userMessages` that the UI acknowledges (`userMessageShown(id)`); "saved, now leave" is a flag (`isSaved`) that `<Name>Screen` reacts to in a `LaunchedEffect` and then calls its navigation action. Mechanics: `../../references/architecture/mvvm-udf.md`.
 - **MUST NOT** send events to the UI through a `Channel` or `SharedFlow`. An indefinite snackbar collected from a channel blocks every effect queued behind it, and an effect consumed while the UI is stopped is lost.
 
 ### `app/` — app-level state
@@ -208,7 +208,7 @@ internal fun HomeScreen(
 | State | Delivery |
 |---|---|
 | Theme, dimensions, language | CompositionLocal |
-| Small, immutable, read-mostly, needed across the tree (`AppState`: subscription tier) | `LocalAppState` **MAY** be used — read it in `<Name>Route` only and pass the value down as a parameter |
+| Small, immutable, read-mostly, needed across the tree (`AppState`: subscription tier) | `LocalAppState` **MAY** be used — read it in `<Name>Screen` only and pass the value down as a parameter |
 | Anything a ViewModel decides on (limits, gating, what to load) | the domain use case injected into that ViewModel, mapped into its `UiState` |
 | Frequently changing or screen-specific data (usage numbers) | that screen's ViewModel → `UiState`; **MUST NOT** be a CompositionLocal |
 | The nav controller | **MUST NOT** be a CompositionLocal; navigation leaves a screen through `<Name>NavigationActions` |
@@ -254,7 +254,8 @@ Both delivery paths **MUST** start from the same domain use case, so they cannot
 | Entity / DAO | `<Thing>Entity` / `<Thing>Dao` | `HistoryEntity` / `HistoryDao` |
 | Mapper | `fun <From>.to<To>()` in `<Feature>Mapper.kt` | `fun TranslateResponse.toDomain()` |
 | Screen set (files) | `<Name>Screen.kt`, `<Name>ViewModel.kt`, `<Name>UiState.kt` | `HomeScreen.kt` … |
-| Route / content | `<Name>Route` / `<Name>Screen` | `HomeRoute` / `HomeScreen` |
+| Stateful / stateless composable | `<Name>Screen` / `<Name>ScreenContent` | `HomeScreen` / `HomeScreenContent` |
+| Previews | `<Name>ScreenContentPreview`, calling `<Name>ScreenContent` | `HomeScreenContentPreview` |
 | Screen callbacks | `<Name>NavigationActions` / `<Name>Actions` | `HomeNavigationActions` / `HomeActions` |
 | ViewModel action | verb, no `on` prefix | `refresh()`, `userMessageShown(id)` |
 | Callback property | `on<Thing><Verb>` | `onMemoryClick`, `onOpenPaywall` |
@@ -292,6 +293,7 @@ The compiled example predates this convention and does **not** follow it. Use th
 | Packages | flat: `data`, `database`, `network`, `settings`, `session`, `presentation`, `ui` | `core` / `domain` / `data` / `presentation`, feature packages beneath |
 | Screen file | `ui/UserProfileScreen.kt`, ViewModel and state in `presentation/` | all three in `presentation/screen/<name>/` |
 | Screen parameters | individual lambdas (`onRefresh`, `onMessageShown`) | `<Name>Actions` + `<Name>NavigationActions` |
+| Composable names | `UserProfileRoute` (stateful) / `UserProfileScreen` (stateless) | `<Name>Screen` (stateful) / `<Name>ScreenContent` (stateless) |
 | ViewModel action naming | `onMessageShown(id)` | `userMessageShown(id)` — verb, no `on` prefix |
 | Verification | compiled and tested on JVM + iOS | only the scaffold output is compiled — § Verification |
 
@@ -313,4 +315,4 @@ For an Android-only project use `--root app/src/main/java` (or `kotlin`).
 
 ## Verification
 
-`scaffold.sh init` + `screen Sample` + `feature translation` were run into a copy of `../../examples/user-profile/`, and the generated files — `presentation/navigation/AppRoute.kt`, `MainTab.kt`, and the three-file `Sample` screen set (`SampleNavigationActions`, `SampleActions`, `SampleRoute`, `SampleScreen`, `SampleViewModel`, `SampleUiState`) — compiled with `compileKotlinJvm compileKotlinIosSimulatorArm64 compileAndroidMain` on 2026-10-04 with no warnings (Kotlin 2.4.20, Compose Multiplatform 1.12.1, Koin 4.2.2, lifecycle 2.11.0). Compiled, not tested: the scaffold emits a placeholder `refresh()`. The `Home*` snippets and the `app/`, `navigation/` file descriptions in this document are **not** compiled; they are placement rules and shapes.
+`scaffold.sh init` + `screen Sample` + `feature translation` were run into a copy of `../../examples/user-profile/`, and the generated files — `presentation/navigation/AppRoute.kt`, `MainTab.kt`, and the three-file `Sample` screen set (`SampleNavigationActions`, `SampleActions`, `SampleScreen`, `SampleScreenContent`, `SampleViewModel`, `SampleUiState`) — compiled with `compileKotlinJvm compileKotlinIosSimulatorArm64 compileAndroidMain` on 2026-10-14 with no warnings (Kotlin 2.4.20, Compose Multiplatform 1.12.1, Koin 4.2.2, lifecycle 2.11.0). Compiled, not tested: the scaffold emits a placeholder `refresh()`. The `Home*` snippets and the `app/`, `navigation/` file descriptions in this document are **not** compiled; they are placement rules and shapes.

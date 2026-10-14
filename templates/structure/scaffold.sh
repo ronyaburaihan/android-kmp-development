@@ -134,21 +134,21 @@ public data class ${N}NavigationActions(
     val onBack: () -> Unit,
 )
 
-/** What the user can do on ${N}Screen. Built by [${N}Route]; defaults keep previews short. */
+/** What the user can do on ${N}ScreenContent. Built by [${N}Screen]; defaults keep previews short. */
 @Immutable
 public data class ${N}Actions(
     val onRefresh: () -> Unit = {},
     val onBack: () -> Unit = {},
 )
 
-/** Route: resolves the ViewModel, collects state, merges navigation and ViewModel calls. No layout. */
+/** Stateful: resolves the ViewModel, collects state, merges navigation and ViewModel calls. No layout. */
 @Composable
-public fun ${N}Route(
+public fun ${N}Screen(
     navigationActions: ${N}NavigationActions,
     viewModel: ${N}ViewModel = koinViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-    ${N}Screen(
+    ${N}ScreenContent(
         uiState = uiState,
         actions = ${N}Actions(
             onRefresh = viewModel::refresh,
@@ -157,9 +157,9 @@ public fun ${N}Route(
     )
 }
 
-/** Screen: values in, lambdas out. Previewable and testable without DI or navigation. */
+/** Stateless content: values in, lambdas out. Previewable and testable without DI or navigation. */
 @Composable
-public fun ${N}Screen(
+public fun ${N}ScreenContent(
     uiState: ${N}UiState,
     actions: ${N}Actions,
     modifier: Modifier = Modifier,
