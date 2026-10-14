@@ -206,7 +206,7 @@ Each screen is three files, plus an optional `component/` package:
 
 ```
 presentation/screen/home/
-├── HomeScreen.kt      # HomeRoute (stateful) + HomeScreen (stateless) + previews
+├── HomeScreen.kt      # HomeScreen (stateful) + HomeScreenContent (stateless) + previews
 ├── HomeViewModel.kt   # one uiState, actions as plain methods
 ├── HomeUiState.kt     # one immutable data class
 └── component/         # stateless pieces used only by this screen
@@ -215,10 +215,10 @@ presentation/screen/home/
 - **State down, method calls up.** There is no event or effect type and no effect channel; one-off
   outcomes such as messages are held in `UiState` and acknowledged by the UI.
 - **Navigation stays out of the screen.** The navigation graph builds a `HomeNavigationActions` and
-  passes it to `HomeRoute`, which merges it with ViewModel methods into the `HomeActions` that the
-  stateless `HomeScreen` receives. No nav controller is read inside a screen.
+  passes it to `HomeScreen`, which merges it with ViewModel methods into the `HomeActions` that the
+  stateless `HomeScreenContent` receives. No nav controller is read inside a screen.
 - **App-wide state has rules.** A small read-mostly value such as the subscription tier may travel
-  by CompositionLocal and is read in the `Route` only; anything a ViewModel decides on comes from a
+  by CompositionLocal and is read in the stateful `HomeScreen` only; anything a ViewModel decides on comes from a
   use case into its `UiState`.
 
 `scaffold.sh` generates the package tree, the navigation key types (`AppRoute`, `MainTab`) and

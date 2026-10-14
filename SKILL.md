@@ -170,7 +170,7 @@ Full index with one-line topic summaries: `references/README.md`, `workflows/REA
 
 ## Project structure convention
 
-If the repository contains a `PROJECT_STRUCTURE.md` (the house convention: package-by-layer `core` → `domain` → `data` → `presentation`, MVVM/UDF screen sets of `Screen`/`ViewModel`/`UiState`, with `Route` + `NavigationActions`/`Actions`), **file placement MUST follow it** and it overrides the module-based defaults in `references/architecture/modularization.md`. Without that file the convention does not apply; do not introduce it unasked. The template, placement rules, naming, and the app-state/CompositionLocal rules are in `templates/structure/PROJECT_STRUCTURE.md`; `templates/structure/scaffold.sh` generates the tree, the navigation key types, and screen sets. Layer *behaviour* rules (repository boundary, cancellation, errors) still come from the references.
+If the repository contains a `PROJECT_STRUCTURE.md` (the house convention: package-by-layer `core` → `domain` → `data` → `presentation`, MVVM/UDF screen sets of `Screen`/`ViewModel`/`UiState` — stateful `<Name>Screen`, stateless `<Name>ScreenContent` — with `NavigationActions`/`Actions`), **file placement MUST follow it** and it overrides the module-based defaults in `references/architecture/modularization.md`. Without that file the convention does not apply; do not introduce it unasked. The template, placement rules, naming, and the app-state/CompositionLocal rules are in `templates/structure/PROJECT_STRUCTURE.md`; `templates/structure/scaffold.sh` generates the tree, the navigation key types, and screen sets. Layer *behaviour* rules (repository boundary, cancellation, errors) still come from the references.
 
 ## Architecture
 
