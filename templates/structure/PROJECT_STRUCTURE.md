@@ -183,7 +183,7 @@ internal fun HomeScreenContent(
 | Layout mode, window size and similar are read once in `<Name>ScreenContent` and passed down as parameters. | SHOULD |
 | Portrait/landscape/tablet variants are one composable with parameters, not copies. | SHOULD |
 | Composable parameters: required first, then `modifier`, then optionals. | MUST [OFFICIAL] |
-| Move a composable to `component/` once `<Name>Screen.kt` passes ~300 lines. | SHOULD |
+| Move a composable to `component/` once `<Name>Screen.kt` passes ~1000 lines. | SHOULD |
 
 ### The ViewModel — MUST
 
