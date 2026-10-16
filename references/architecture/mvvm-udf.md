@@ -202,7 +202,7 @@ class FeedViewModel : ViewModel() {
 ```kotlin
 // CORRECT — the UI consumes and acknowledges
 @Composable
-fun FeedScreen(uiState: FeedUiState, onMessageShown: (Long) -> Unit) {
+fun FeedScreenContent(uiState: FeedUiState, onMessageShown: (Long) -> Unit) {
     val snackbarHostState = remember { SnackbarHostState() }
     val message = uiState.messages.firstOrNull()
 

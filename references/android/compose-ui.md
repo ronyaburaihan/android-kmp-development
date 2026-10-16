@@ -83,9 +83,9 @@ OutlinedTextField(value = query, onValueChange = { query = it }, label = { Text(
 
 // CORRECT — screen state from the ViewModel
 @Composable
-fun FeedRoute(viewModel: FeedViewModel = viewModel()) {
+fun FeedScreen(viewModel: FeedViewModel = viewModel()) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-    FeedScreen(uiState = uiState, onRefresh = viewModel::refresh)
+    FeedScreenContent(uiState = uiState, onRefresh = viewModel::refresh)
 }
 ```
 
@@ -95,12 +95,14 @@ fun FeedRoute(viewModel: FeedViewModel = viewModel()) {
 
 ## State hoisting and composable API design — MUST
 
-**MUST** split a screen into a *route* composable that reads state and a *content* composable that receives it. The content composable takes values and lambdas only.
+**MUST** split a screen into a stateful composable that reads state and a stateless content composable that receives it. The content composable takes values and lambdas only.
+
+**SHOULD** name the pair `<Name>Screen` (stateful) and `<Name>ScreenContent` (stateless). [DEFAULT] A codebase with an established pair (`<Name>Route` / `<Name>Screen`) keeps its own. The `Route` suffix is avoided because type-safe navigation commonly uses it for destination keys.
 
 ```kotlin
 // CORRECT — content is stateless, previewable and testable
 @Composable
-fun FeedScreen(
+fun FeedScreenContent(
     uiState: FeedUiState,
     onRefresh: () -> Unit,
     onArticleClick: (ArticleId) -> Unit,
@@ -109,7 +111,7 @@ fun FeedScreen(
 
 // WRONG — the content composable owns its data source
 @Composable
-fun FeedScreen(viewModel: FeedViewModel = viewModel()) {
+fun FeedScreenContent(viewModel: FeedViewModel = viewModel()) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     /* ... */
 }
@@ -390,7 +392,7 @@ The APIs in this document are identical on Android and CMP. The differences live
 ```kotlin
 @Test
 fun showsEmptyState() = runComposeUiTest {       // CMP v2 API
-    setContent { FeedScreen(uiState = FeedUiState.Empty, onRefresh = {}, onArticleClick = {}) }
+    setContent { FeedScreenContent(uiState = FeedUiState.Empty, onRefresh = {}, onArticleClick = {}) }
     onNodeWithTag("empty_state").assertIsDisplayed()
 }
 ```

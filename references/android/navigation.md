@@ -50,9 +50,9 @@ fun AppNavigation() {
             rememberViewModelStoreNavEntryDecorator(),       // ViewModel per entry
         ),
         entryProvider = entryProvider {
-            entry<Feed> { FeedRoute(onArticleClick = { backStack.add(Article(it.value)) }) }
-            entry<Article> { key -> ArticleRoute(key.id, onBack = { backStack.removeLastOrNull() }) }
-            entry<Settings> { SettingsRoute() }
+            entry<Feed> { FeedScreen(onArticleClick = { backStack.add(Article(it.value)) }) }
+            entry<Article> { key -> ArticleScreen(key.id, onBack = { backStack.removeLastOrNull() }) }
+            entry<Settings> { SettingsScreen() }
         },
     )
 }

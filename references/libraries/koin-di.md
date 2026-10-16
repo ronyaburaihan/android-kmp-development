@@ -231,9 +231,9 @@ fun UserScreen(userId: String) {
 
 // CORRECT — ViewModel, which also solves the viewModel() initializer problem
 @Composable
-fun FeedRoute(viewModel: FeedViewModel = koinViewModel()) {
+fun FeedScreen(viewModel: FeedViewModel = koinViewModel()) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-    FeedScreen(uiState, viewModel::refresh)
+    FeedScreenContent(uiState, viewModel::refresh)
 }
 ```
 

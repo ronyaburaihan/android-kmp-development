@@ -123,7 +123,7 @@ For each, record:
 | One-off events: folded into state, or a `Channel`/`SharedFlow` effect? (house structure: folded into state) | ViewModel |
 | `stateIn` policy actually used (`WhileSubscribed(n)`, `Eagerly`, none)? | ViewModel |
 | Collection in UI: `collectAsStateWithLifecycle` or `collectAsState`? | screen composable |
-| Route/content split, or ViewModel passed into the content composable? | screen composable |
+| Stateful/stateless screen split and its naming (`Screen`/`ScreenContent`, `Route`/`Screen`), or ViewModel passed into the content composable? | screen composable |
 | Domain layer present? Use cases real or pass-through? | `:domain` or `usecase` packages |
 | Repository interface owner: `:domain` or `:data`? | import direction |
 | Separate DTO / entity / domain model, or one shared class? | `:data` |
@@ -302,7 +302,7 @@ Base skeleton from `README.md`, with **Inspection findings** replaced by the Pro
 | One-off events | | `path:line` |
 | `stateIn` policy | | `path:line` |
 | State collection | | `path:line` |
-| Route/content split | | `path:line` |
+| Screen/content split and naming | | `path:line` |
 | Domain layer | | `path:line` |
 | Repository interface owner | | `path:line` |
 | Model per layer | | `path:line` |

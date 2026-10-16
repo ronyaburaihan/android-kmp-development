@@ -173,7 +173,7 @@ class FeedScreenTest {
     @Test
     fun showsEmptyStateWhenNoArticles() = runComposeUiTest {
         setContent {
-            FeedScreen(
+            FeedScreenContent(
                 uiState = FeedUiState.Success(emptyList()),
                 onRefresh = {},
                 onArticleClick = {},
@@ -187,7 +187,7 @@ class FeedScreenTest {
     fun refreshInvokesCallback() = runComposeUiTest {
         var refreshed = false
         setContent {
-            FeedScreen(FeedUiState.Success(emptyList()), onRefresh = { refreshed = true }, onArticleClick = {})
+            FeedScreenContent(FeedUiState.Success(emptyList()), onRefresh = { refreshed = true }, onArticleClick = {})
         }
         onNodeWithTag("refresh_button").performClick()
         assertTrue(refreshed)
@@ -213,7 +213,7 @@ class FeedScreenAndroidTest {
     @Test
     fun showsArticles() {
         composeTestRule.setContent {
-            AppTheme { FeedScreen(FeedUiState.Success(listOf(article)), {}, {}) }
+            AppTheme { FeedScreenContent(FeedUiState.Success(listOf(article)), {}, {}) }
         }
         composeTestRule.onNodeWithTag("article_${article.id.value}").assertIsDisplayed()
     }
@@ -281,8 +281,8 @@ dependencies {
 @PreviewTest
 @Preview(showBackground = true)
 @Composable
-fun FeedScreenEmptyPreview() {
-    AppTheme { FeedScreen(FeedUiState.Success(emptyList()), {}, {}) }
+fun FeedScreenContentEmptyPreview() {
+    AppTheme { FeedScreenContent(FeedUiState.Success(emptyList()), {}, {}) }
 }
 ```
 

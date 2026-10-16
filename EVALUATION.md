@@ -56,7 +56,7 @@ Score each item PASS / FAIL / N/A. A FAIL on any **gate** item is a failed evalu
 | D6 | No platform import in `commonMain`; no `Flow`, generic interface, or default argument on a Swift-facing type; `@Throws` on exported throwing functions | **gate** for KMP |
 | D7 | New Room columns have defaults; migrations explicit; no `fallbackToDestructiveMigration` in a shipping build type | **gate** for persistence |
 | D8 | No secret in source, `BuildConfig`, or `commonMain`; no `LogLevel.ALL/BODY` in release; no `EncryptedSharedPreferences` | **gate** |
-| D9 | Content composables take state + lambdas (route/content split) where the codebase does; lazy lists have keys; no backwards writes | |
+| D9 | Content composables take state + lambdas (`Screen`/`ScreenContent` split) where the codebase does; lazy lists have keys; no backwards writes | |
 | D10 | Tests use fakes, `kotlin-test` in `commonTest`, no sleeps/retries, `testTag` not text | |
 
 ## E. Reporting

@@ -38,7 +38,7 @@ Run `inspect-project.md`, then additionally:
 find . -path '*feature*' -type d -not -path '*/build/*' | head -20
 ```
 
-**MUST** identify and read, in full, **one complete existing feature** of comparable shape: its module/package layout, route composable, content composable, ViewModel, UI state, repository call, DI registration, navigation registration, and tests.
+**MUST** identify and read, in full, **one complete existing feature** of comparable shape: its module/package layout, stateful screen composable, stateless content composable, ViewModel, UI state, repository call, DI registration, navigation registration, and tests.
 
 **MUST** record:
 
@@ -113,7 +113,7 @@ See `../references/kotlin/coroutines-and-flow.md`.
 
 ### 4.6 UI
 
-**MUST** split route (reads state, resolves the ViewModel) from content (takes values and lambdas) **if comparable features do**. If they pass the ViewModel into the content composable, match that and note it.
+**MUST** split the stateful screen composable (reads state, resolves the ViewModel) from the stateless content composable (takes values and lambdas) **if comparable features do**, using their names; with no precedent, `<Name>Screen` / `<Name>ScreenContent` (`../references/android/compose-ui.md`). If they pass the ViewModel into the content composable, match that and note it.
 
 **MUST:**
 - handle every state agreed in 4.1 — no `TODO()` branch

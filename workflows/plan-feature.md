@@ -63,7 +63,7 @@ Per layer, state what is reused, what is added, and which existing file the new 
 | Domain | new `UserProfile` + use case? or reuse? | `path` | `../references/architecture/clean-architecture.md` |
 | Data | repository method / DTO / entity / migration | `path` | `../references/libraries/*.md` |
 | Presentation | `UiState` shape; ViewModel or presenter | `path` | `../references/architecture/mvvm-udf.md` |
-| UI | route/content split; states rendered | `path` | `../references/android/compose-ui.md` |
+| UI | `Screen`/`ScreenContent` split; states rendered | `path` | `../references/android/compose-ui.md` |
 | Navigation | key + registration | `path` | `../references/android/navigation.md` |
 | DI | bindings + scopes | `path` | `../references/libraries/koin-di.md` |
 | Platform | any `expect`/interface needed | `path` | `../references/kmp/project-structure.md` |

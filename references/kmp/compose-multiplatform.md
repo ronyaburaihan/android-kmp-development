@@ -168,21 +168,21 @@ Type reflection is unavailable on non-JVM targets. A parameterless `viewModel()`
 ```kotlin
 // CORRECT — works on every target
 @Composable
-fun OrderRoute(viewModel: OrderViewModel = viewModel { OrderViewModel(repository) }) {
+fun OrderScreen(viewModel: OrderViewModel = viewModel { OrderViewModel(repository) }) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-    OrderScreen(uiState, viewModel::setQuantity)
+    OrderScreenContent(uiState, viewModel::setQuantity)
 }
 
 // WRONG — compiles on Android, fails on iOS/web at runtime
 @Composable
-fun OrderRoute(viewModel: OrderViewModel = viewModel()) { /* ... */ }
+fun OrderScreen(viewModel: OrderViewModel = viewModel()) { /* ... */ }
 ```
 
 **SHOULD** resolve the ViewModel through the DI container instead, which removes the initializer boilerplate and keeps construction in one place:
 
 ```kotlin
 @Composable
-fun OrderRoute(viewModel: OrderViewModel = koinViewModel()) { /* ... */ }
+fun OrderScreen(viewModel: OrderViewModel = koinViewModel()) { /* ... */ }
 ```
 
 See `../libraries/koin-di.md`.

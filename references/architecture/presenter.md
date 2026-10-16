@@ -117,7 +117,7 @@ Presenter test API, read from the `circuit-test` **0.39.0 sources jar** (verifie
 
 | Concern | Android / CMP | iOS native SwiftUI |
 |---|---|---|
-| Who owns the scope | `rememberCoroutineScope()` in the route, or a retained holder | a Swift `ObservableObject` wrapper: creates the scope, cancels in `deinit` |
+| Who owns the scope | `rememberCoroutineScope()` in the stateful screen composable, or a retained holder | a Swift `ObservableObject` wrapper: creates the scope, cancels in `deinit` |
 | Config change / process death | **not handled** by a plain presenter — the caller must retain it, or use a ViewModel | n/a |
 | `StateFlow` consumption | `collectAsStateWithLifecycle()` | **not directly** — expose `observe(onEach): Cancellable` on the facade, or use a bridge; `../kmp/ios-interop.md` |
 | `Dispatchers.Main` | available | available via `Dispatchers.Main` on Kotlin/Native; the scope the Swift side passes should use it |

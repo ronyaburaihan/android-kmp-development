@@ -107,7 +107,7 @@ Run section 7.
 
 | # | Trigger | Options | Action |
 |---|---|---|---|
-| D1 | Content composable takes a **ViewModel** | (a) refactor to route/content split (a small refactor); (b) test via instrumented with a DI graph | **MUST** ask; recommend (a). |
+| D1 | Content composable takes a **ViewModel** | (a) refactor to a `Screen`/`ScreenContent` split (a small refactor); (b) test via instrumented with a DI graph | **MUST** ask; recommend (a). |
 | D2 | Nodes have **no `testTag`s** | (a) add tags (production change, no behaviour change); (b) match by text | **MUST** choose (a); tags are the stable contract. |
 | D3 | Flow needs **system UI** | — | instrumented/simulator; mark `NOT RUN` if no device. |
 | D4 | Screenshot testing requested | — | **MUST** state alpha/deprecated/no-KMP status; **MUST NOT** gate on it. |
