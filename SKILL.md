@@ -111,8 +111,9 @@ The example shows layer **behaviour**. Its package layout is not the house struc
 | An ambiguous request | `workflows/clarify-requirements.md` first (+ `process/grilling.md`) |
 | "Does X support Y?" / "Is Z recommended?" | `workflows/research-technical-question.md` |
 | Plan a multi-file change | `workflows/plan-feature.md` + the layer references it names |
-| Add a screen or feature | `workflows/add-feature.md` + `references/architecture/mvvm-udf.md` + `references/android/compose-ui.md` + `references/android/theming.md` |
+| Add a screen or feature | `workflows/add-feature.md` + `references/architecture/mvvm-udf.md` + `references/android/compose-ui.md` + `references/android/theming.md` + `references/android/adaptive-layouts.md` |
 | Any UI code: colours, text styles, corners, padding and sizes; turning a design's values into code | `references/android/theming.md` |
+| Any UI code: phone, tablet portrait and tablet landscape layouts; window size classes; foldables and multi-window | `references/android/adaptive-layouts.md` |
 | Add or change an API call | `workflows/add-network-endpoint.md` + `references/libraries/ktor-networking.md` |
 | Persist data; Room/DataStore; migration | `workflows/add-persistence.md` + `references/libraries/room-datastore.md` |
 | Fix a bug | `workflows/diagnose-and-fix-bug.md` + `process/diagnostic-loop.md` + the one reference for the defect's area |
@@ -210,6 +211,7 @@ Defaults for new code, where the project has not already decided:
 - Keep platform code in platform source sets; no platform type in `commonMain`.
 - No hardcoded user-visible strings, no new dependency, no new abstraction without a stated reason.
 - Style from the theme: colours from `MaterialTheme.colorScheme`, text from `MaterialTheme.typography`, dp from the app's dimens — the nearest token within 2 dp; a value used once with no near token stays a literal. `references/android/theming.md`
+- Design every screen, dialog and sheet for phone, tablet portrait and tablet landscape, branching on the window size class — fewer only when the user explicitly says so. `references/android/adaptive-layouts.md`
 - Do not reformat, reorder, or re-lint regions you did not otherwise change.
 
 ---

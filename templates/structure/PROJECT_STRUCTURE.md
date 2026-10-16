@@ -111,7 +111,7 @@ presentation/
 ├── component/     shared stateless composables
 ├── permission/    permission controllers and status types
 ├── theme/         AppTheme.kt  Color.kt  Type.kt  Shapes.kt  AppDimensions.kt
-├── util/          UiText.kt  CompositionLocals.kt  DeviceLayoutMode.kt
+├── util/          UiText.kt  CompositionLocals.kt  LayoutMode.kt
 └── di/            PresentationModule.kt
 ```
 
@@ -180,7 +180,7 @@ internal fun HomeScreenContent(
 | `<Name>NavigationActions` is consumed by `<Name>Screen` only; it is never passed into `<Name>ScreenContent` or a component. | MUST |
 | A click that only navigates goes `navigationActions` → `actions` and skips the ViewModel. | SHOULD |
 | A decision that picks between two destinations (premium gate) is made once, in `<Name>Screen` or the ViewModel — never inside a component. | MUST |
-| Layout mode, window size and similar are read once in `<Name>ScreenContent` and passed down as parameters. | SHOULD |
+| Layout mode (from the window size class) is read once in `<Name>ScreenContent` and passed down as a parameter; every screen has a phone, tablet-portrait and tablet-landscape layout — `../../references/android/adaptive-layouts.md`. | MUST |
 | Portrait/landscape/tablet variants are one composable with parameters, not copies. | SHOULD |
 | Composable parameters: required first, then `modifier`, then optionals. | MUST [OFFICIAL] |
 | Move a composable to `component/` once `<Name>Screen.kt` passes ~1000 lines. | SHOULD |

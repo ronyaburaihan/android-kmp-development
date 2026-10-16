@@ -74,6 +74,8 @@ class UserProfileScreenTest {
 - Find nodes by `testTag`, not rendered text — localisation breaks text matching.
 - No `TestRule` in `commonTest` (desktop-only).
 
+**MUST** add one test per target layout — phone, tablet portrait, tablet landscape — driven by `DeviceConfigurationOverride.WindowSize`, asserting a node only that layout has (`../references/android/adaptive-layouts.md` § Tests).
+
 ### 4.3 Accessibility semantics — SHOULD
 
 For the primary actions on a screen, assert the semantics assistive technology reads: `onNodeWithContentDescription`, `assertHasClickAction`, role/state descriptions. It is the same tree the tests use, so this is cheap.
@@ -153,6 +155,7 @@ Run section 7.
 | V8 | Accessibility semantics asserted for primary actions | SHOULD |
 | V9 | Existing tests unmodified and green | MUST |
 | V10 | No production behaviour change | MUST |
+| V11 | One layout test per target (phone, tablet portrait, tablet landscape), each red when its branch is broken | MUST |
 
 ---
 

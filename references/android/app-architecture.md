@@ -200,7 +200,7 @@ Create a model per layer in complex apps: a remote-data-source model (DTO), a DA
 - **MUST** make types responsible for their own concurrency policy — "main-safe" means safe to call from the main thread without blocking it.
 - **SHOULD** persist offline data so the app functions without a network.
 - **SHOULD** preserve UI state across configuration changes.
-- **SHOULD** use canonical layouts for multiple form factors, and derive adaptive state from `currentWindowAdaptiveInfo()`.
+- **SHOULD** use canonical layouts for multiple form factors, and derive adaptive state from `currentWindowAdaptiveInfo()`. See `adaptive-layouts.md`.
 - **SHOULD** let Jetpack and other recommended libraries handle boilerplate rather than reimplementing it.
 
 ---

@@ -412,6 +412,7 @@ Test setup, runners and source sets: `../quality/testing-strategy.md`.
 - State ownership, `uiState` modelling, the no-events rule: `../architecture/mvvm-udf.md`
 - Layer rules and the repository boundary: `app-architecture.md`
 - Colours, typography, shapes, dimensions tokens: `theming.md`
+- Phone, tablet-portrait and tablet-landscape layouts: `adaptive-layouts.md`
 - `StateFlow`, `stateIn`, lifecycle-aware collection: `../kotlin/coroutines-and-flow.md`
 - Immutability and collection-type conventions: `../kotlin/coding-conventions.md`
 - CMP-specific behaviour: `../kmp/compose-multiplatform.md`

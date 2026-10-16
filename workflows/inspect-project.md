@@ -125,6 +125,7 @@ For each, record:
 | Collection in UI: `collectAsStateWithLifecycle` or `collectAsState`? | screen composable |
 | Stateful/stateless screen split and its naming (`Screen`/`ScreenContent`, `Route`/`Screen`), or ViewModel passed into the content composable? | screen composable |
 | Theme: colour scheme, typography, shapes, dimensions object — accessor names (`MaterialTheme.*`, `dimens`) and token groups? | theme package |
+| Adaptive layout: how the window size is read (`currentWindowAdaptiveInfo`, own layout-mode type, `isTablet`), which screens have tablet layouts, orientation locks in the manifest? | screen composables, manifest |
 | Domain layer present? Use cases real or pass-through? | `:domain` or `usecase` packages |
 | Repository interface owner: `:domain` or `:data`? | import direction |
 | Separate DTO / entity / domain model, or one shared class? | `:data` |
@@ -305,6 +306,7 @@ Base skeleton from `README.md`, with **Inspection findings** replaced by the Pro
 | State collection | | `path:line` |
 | Screen/content split and naming | | `path:line` |
 | Theme tokens and accessors | | `path:line` |
+| Adaptive layout | | `path:line` |
 | Domain layer | | `path:line` |
 | Repository interface owner | | `path:line` |
 | Model per layer | | `path:line` |

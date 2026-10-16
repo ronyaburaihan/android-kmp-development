@@ -89,6 +89,9 @@ data class AppDimensions(
     val textFieldHeight: Dp = 56.dp,
     val listItemHeight: Dp = 72.dp,
 
+    // Layout
+    val contentMaxWidth: Dp = 640.dp,
+
     // Corners, elevation, borders
     val cornerRadiusSmall: Dp = 8.dp,
     val cornerRadiusMedium: Dp = 12.dp,
@@ -129,7 +132,7 @@ The `error(...)` default makes a missing provider fail at once instead of render
 
 Rules for the object:
 
-- **MUST** keep tokens in purpose groups (spacing, screen, icon, avatar, component size, corner, elevation, border). A token belongs to one group.
+- **MUST** keep tokens in purpose groups (spacing, screen, icon, avatar, component size, layout, corner, elevation, border). A token belongs to one group.
 - **MUST** name a new token in its group's existing scheme. **MUST NOT** start a parallel scheme in the same group (`spacingXs` beside `paddingExtraSmall`): two names for one scale split usage and drift apart.
 - **MUST NOT** add a token named after one screen's element (an OTP cell, a hero image). That is a single-use value; it stays a literal at its call site.
 - **MUST NOT** change an existing token's value to fit one design. Every screen that reads it changes — an unrequested behaviour change.

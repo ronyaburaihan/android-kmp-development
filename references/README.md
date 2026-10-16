@@ -42,6 +42,7 @@ Each rule is also tagged with its provenance:
 | `android/accessibility.md` | Compose semantics, touch targets, state/live announcements, TalkBack and VoiceOver, CMP iOS |
 | `android/localization.md` | String resources (Android + CMP), plurals, formatting, RTL, per-app language, pseudolocales |
 | `android/theming.md` | Colour scheme, typography, shapes, the app dimensions object; resolving a design value to the nearest token or a single-use literal |
+| `android/adaptive-layouts.md` | Phone, tablet portrait and tablet landscape by default; window size classes, canonical layouts, previews and tests per target |
 
 ### `kmp/`
 | File | Topic |

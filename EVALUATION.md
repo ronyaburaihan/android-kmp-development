@@ -59,6 +59,7 @@ Score each item PASS / FAIL / N/A. A FAIL on any **gate** item is a failed evalu
 | D9 | Content composables take state + lambdas (`Screen`/`ScreenContent` split) where the codebase does; lazy lists have keys; no backwards writes | |
 | D10 | Tests use fakes, `kotlin-test` in `commonTest`, no sleeps/retries, `testTag` not text | |
 | D11 | Colours and text styles come from the theme; each dp value is the nearest dimens token within 2 dp, or a literal when single-use; no token added for one call site | |
+| D12 | Each new screen has phone, tablet-portrait and tablet-landscape layouts (unless the user explicitly narrowed them), chosen by window size class with a height check, state above the branch, and a test per target | |
 
 ## E. Reporting
 

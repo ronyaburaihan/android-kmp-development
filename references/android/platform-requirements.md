@@ -107,7 +107,7 @@ Manifest attributes: `android:screenOrientation`, `android:resizableActivity`, `
 Runtime APIs: `setRequestedOrientation()`, `getRequestedOrientation()`.
 All orientation values: `portrait`, `reversePortrait`, `sensorPortrait`, `userPortrait`, `landscape`, `reverseLandscape`, `sensorLandscape`, `userLandscape`.
 
-**MUST** design layouts that work in any orientation and any window size at ≥600dp. Derive adaptive state from `currentWindowAdaptiveInfo()` and use the canonical layouts.
+**MUST** design layouts that work in any orientation and any window size at ≥600dp. Derive adaptive state from `currentWindowAdaptiveInfo()` and use the canonical layouts. How: `adaptive-layouts.md`.
 
 Exceptions: games (declared via `android:appCategory`), a user opt-in setting, and screens below 600dp.
 

@@ -64,6 +64,7 @@ Present, and wait for confirmation:
 - the file list to be created or modified, with paths
 - the `UiState` shape
 - the states handled
+- the layout for phone, tablet portrait and tablet landscape — fewer only on an explicit user instruction (`../references/android/adaptive-layouts.md`)
 - the DI and navigation registration points
 - whether a new module is required (→ D1)
 
@@ -123,6 +124,7 @@ See `../references/kotlin/coroutines-and-flow.md`.
 - accept `modifier: Modifier = Modifier` on reusable composables
 - apply the project's string-resource mechanism; **MUST NOT** hardcode user-visible strings
 - take colours from `MaterialTheme.colorScheme`, text styles from `MaterialTheme.typography`, and dp values from the app's dimens — the nearest token within 2 dp; a value used once with no near token stays a literal (`../references/android/theming.md`)
+- build the phone, tablet-portrait and tablet-landscape layouts agreed in 4.1, branching on the window size class; state stays above the layout branch (`../references/android/adaptive-layouts.md`)
 
 See `../references/android/compose-ui.md`.
 
@@ -225,6 +227,7 @@ silently folded into this one.
 | V9 | Accessibility: icon-only controls have `contentDescription` | review | SHOULD |
 | V10 | iOS framework still builds | `./gradlew :<shared>:linkDebugFrameworkIosSimulatorArm64` | SHOULD if KMP with iOS |
 | V11 | Theme tokens used | the grep in `../references/android/theming.md` § Review checklist on the new UI files | MUST |
+| V12 | Every target layout renders | one Compose test per target with `DeviceConfigurationOverride.WindowSize`, plus a run on a phone and a ≥600dp tablet in both orientations (or `NOT RUN`) | MUST |
 
 **MUST NOT** report `PASS` for a check that was not executed. Use `NOT RUN — <reason>`.
 
@@ -320,6 +323,7 @@ Base skeleton from `README.md`, with these additions.
 | V9 | Accessibility | | |
 | V10 | iOS framework links | | |
 | V11 | Theme tokens | | |
+| V12 | Target layouts | | |
 
 ### Tests added
 | Test | Covers |

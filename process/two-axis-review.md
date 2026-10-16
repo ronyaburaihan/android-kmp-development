@@ -140,6 +140,7 @@ Heuristics. Each is a prompt to look, and each has a reference that decides it.
 |---|---|
 | A hardcoded user-visible string | `../references/android/localization.md` |
 | A colour literal or `fontSize` in a screen; a dp literal where a dimens token is within 2 dp | `../references/android/theming.md` |
+| A screen with one layout for every window size; `isTablet` or orientation deciding a layout | `../references/android/adaptive-layouts.md` |
 | An interactive element with no accessible label; an image with no `contentDescription` decision | `../references/android/accessibility.md` |
 | A secret, token, or key in source or in a build file | `../references/quality/security.md` |
 | `TODO()`, `NotImplementedError`, or a stub on a delivered path | `../workflows/README.md` § 4 |

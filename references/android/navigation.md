@@ -70,7 +70,7 @@ fun AppNavigation() {
 
 ### Adaptive layouts
 
-Navigation 3 can display more than one entry at once (list–detail on a large screen) through scene strategies. Large screens ignore orientation locks at API 36, so **MUST** verify every navigation flow at ≥600dp. See `platform-requirements.md`.
+Navigation 3 can display more than one entry at once (list–detail on a large screen) through scene strategies. Large screens ignore orientation locks at API 36, so **MUST** verify every navigation flow at ≥600dp. See `platform-requirements.md`. Per-target layout rules: `adaptive-layouts.md`.
 
 ---
 

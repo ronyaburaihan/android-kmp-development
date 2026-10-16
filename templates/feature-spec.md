@@ -14,6 +14,13 @@
 - [ ] iOS — <Compose Multiplatform | native SwiftUI>
 - [ ] Desktop / Web
 
+## Form factors
+- [x] Phone
+- [x] Tablet portrait
+- [x] Tablet landscape
+
+<All three by default. Uncheck one only on an explicit user instruction, quoted here.>
+
 ## Acceptance criteria
 Each must be observable without reading code.
 
