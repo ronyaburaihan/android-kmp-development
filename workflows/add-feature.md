@@ -122,6 +122,7 @@ See `../references/kotlin/coroutines-and-flow.md`.
 - add `contentDescription` on icon-only controls
 - accept `modifier: Modifier = Modifier` on reusable composables
 - apply the project's string-resource mechanism; **MUST NOT** hardcode user-visible strings
+- take colours from `MaterialTheme.colorScheme`, text styles from `MaterialTheme.typography`, and dp values from the app's dimens — the nearest token within 2 dp; a value used once with no near token stays a literal (`../references/android/theming.md`)
 
 See `../references/android/compose-ui.md`.
 
@@ -198,7 +199,7 @@ silently folded into this one.
 8. Add a `TODO()` or `throw NotImplementedError()` in a delivered path.
 9. Introduce a navigation, DI, state-management, or image-loading library the project does not use.
 10. Change a shared `UiState`, repository interface, or design-system component used by other features without flagging it (→ D7).
-11. Hardcode user-visible strings, dimensions, or colours where the project has resources for them.
+11. Hardcode user-visible strings, colours, or font sizes, or write a dp literal where a dimens token is within 2 dp.
 12. Commit or push unless asked.
 
 **In a KMP project, additionally MUST:**
@@ -223,6 +224,7 @@ silently folded into this one.
 | V8 | No hardcoded user-visible strings | `grep` the new files for literal UI text | MUST |
 | V9 | Accessibility: icon-only controls have `contentDescription` | review | SHOULD |
 | V10 | iOS framework still builds | `./gradlew :<shared>:linkDebugFrameworkIosSimulatorArm64` | SHOULD if KMP with iOS |
+| V11 | Theme tokens used | the grep in `../references/android/theming.md` § Review checklist on the new UI files | MUST |
 
 **MUST NOT** report `PASS` for a check that was not executed. Use `NOT RUN — <reason>`.
 
@@ -317,6 +319,7 @@ Base skeleton from `README.md`, with these additions.
 | V8 | No hardcoded strings | | |
 | V9 | Accessibility | | |
 | V10 | iOS framework links | | |
+| V11 | Theme tokens | | |
 
 ### Tests added
 | Test | Covers |

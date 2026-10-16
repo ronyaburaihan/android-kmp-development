@@ -110,7 +110,7 @@ presentation/
 ├── screen/<name>/ <Name>Screen.kt  <Name>ViewModel.kt  <Name>UiState.kt  component/
 ├── component/     shared stateless composables
 ├── permission/    permission controllers and status types
-├── theme/         AppTheme.kt  Color.kt  Type.kt  Dimens.kt
+├── theme/         AppTheme.kt  Color.kt  Type.kt  Shapes.kt  AppDimensions.kt
 ├── util/          UiText.kt  CompositionLocals.kt  DeviceLayoutMode.kt
 └── di/            PresentationModule.kt
 ```
@@ -236,7 +236,7 @@ Both delivery paths **MUST** start from the same domain use case, so they cannot
 |---|---|---|
 | `component/` | reusable stateless composables — values + lambdas, `modifier` param | ViewModel parameters; feature-specific logic |
 | `permission/` | permission controllers, `PermissionStatus` | requesting on screen entry — ask in context, from a user action |
-| `theme/` | `AppTheme.kt`, `Color.kt`, `Type.kt`, `Dimens.kt` | hardcoded colours, sizes, or font attributes in screens |
+| `theme/` | `AppTheme.kt` (provides `LocalDimensions` around `MaterialTheme`), `Color.kt`, `Type.kt`, `Shapes.kt`, `AppDimensions.kt` (the `AppDimensions` tokens and the `dimens` accessor) | colour literals or font attributes in screens; a dp literal where a token is within 2 dp; a token used by one call site — `../../references/android/theming.md` |
 | `util/` | `UiText` (+ `asString()`), `CompositionLocals.kt`, layout-mode helpers | screen-specific types |
 | `di/` | `PresentationModule.kt` — one `viewModelOf(::<Name>ViewModel)` per screen | bindings for `data` or `core` |
 

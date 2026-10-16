@@ -124,6 +124,7 @@ For each, record:
 | `stateIn` policy actually used (`WhileSubscribed(n)`, `Eagerly`, none)? | ViewModel |
 | Collection in UI: `collectAsStateWithLifecycle` or `collectAsState`? | screen composable |
 | Stateful/stateless screen split and its naming (`Screen`/`ScreenContent`, `Route`/`Screen`), or ViewModel passed into the content composable? | screen composable |
+| Theme: colour scheme, typography, shapes, dimensions object — accessor names (`MaterialTheme.*`, `dimens`) and token groups? | theme package |
 | Domain layer present? Use cases real or pass-through? | `:domain` or `usecase` packages |
 | Repository interface owner: `:domain` or `:data`? | import direction |
 | Separate DTO / entity / domain model, or one shared class? | `:data` |
@@ -303,6 +304,7 @@ Base skeleton from `README.md`, with **Inspection findings** replaced by the Pro
 | `stateIn` policy | | `path:line` |
 | State collection | | `path:line` |
 | Screen/content split and naming | | `path:line` |
+| Theme tokens and accessors | | `path:line` |
 | Domain layer | | `path:line` |
 | Repository interface owner | | `path:line` |
 | Model per layer | | `path:line` |

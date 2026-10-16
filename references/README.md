@@ -41,6 +41,7 @@ Each rule is also tagged with its provenance:
 | `android/navigation.md` | Navigation 3 model, entry decorators, deep links, Navigation 2 in existing apps |
 | `android/accessibility.md` | Compose semantics, touch targets, state/live announcements, TalkBack and VoiceOver, CMP iOS |
 | `android/localization.md` | String resources (Android + CMP), plurals, formatting, RTL, per-app language, pseudolocales |
+| `android/theming.md` | Colour scheme, typography, shapes, the app dimensions object; resolving a design value to the nearest token or a single-use literal |
 
 ### `kmp/`
 | File | Topic |
